@@ -1,4 +1,5 @@
 import { Inventory } from "@/components/inventory/Inventory";
+import { ManualEntryButton } from "@/components/ManualEntryButton";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useGetInventoryQuery } from "@/redux/products/apiSlice";
@@ -21,6 +22,11 @@ export default function InventoryScreen() {
         <ThemedText type="title" style={styles.title}>
           {t("inventory.title")}
         </ThemedText>
+      </View>
+
+      {/* Manual Entry Button */}
+      <View style={styles.buttonContainer}>
+        <ManualEntryButton inventoryData={inventoryData} />
       </View>
 
       {/* Inventory Content */}
@@ -48,6 +54,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
   },
   scrollContainer: {
     flex: 1,

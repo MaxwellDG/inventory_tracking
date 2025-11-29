@@ -11,13 +11,16 @@ export const baseQuery = (auth: boolean = false, path: string = "") => {
     if (Platform.OS === "ios") {
       apiUrl = "http://127.0.0.1:8000";
     } else if (Platform.OS === "android") {
-      apiUrl = "http://10.0.2.2:8000";
+      process.env.EXPO_PUBLIC_IS_ANDROID_USB_CONNECTION
+        ? (apiUrl = "http://127.0.0.1:8000")
+        : (apiUrl = "http://10.0.2.2:8000"); // w emulator
     } else {
       apiUrl = "http://localhost:8000";
     }
   }
 
   const fullUrl = apiUrl + "/api" + path;
+  console.log("fullUrl", fullUrl);
 
   return fetchBaseQuery({
     baseUrl: fullUrl,

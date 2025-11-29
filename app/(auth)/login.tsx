@@ -66,8 +66,8 @@ export default function LoginScreen() {
         await save(STORAGE_KEYS.ACCESS_TOKEN, result.token);
       }
 
-      // Navigate to company selection/creation screen
-      router.replace("/company");
+      // Navigate to inventory tab
+      router.replace("/(tabs)/inventory");
     } catch (error: any) {
       console.log("error", error);
       Alert.alert(
