@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useGetFeesQuery } from "@/redux/fees/apiSlice";
 import { useGetInventoryQuery } from "@/redux/products/apiSlice";
 import { Category, Item } from "@/redux/products/types";
 import React, { useState } from "react";
@@ -27,6 +28,7 @@ export default function OrdersScreen() {
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
   const { data: inventoryData, isLoading: inventoryLoading } =
     useGetInventoryQuery();
+  const { data: fees = [] } = useGetFeesQuery();
 
   // Helper functions to work with inventory data
   const getItemsByCategory = (categoryId: number) => {
@@ -116,7 +118,21 @@ export default function OrdersScreen() {
   };
 
   const subtotal = calculateSubtotal();
-  const total = subtotal; // For now, total equals subtotal
+
+  // Get applicable fees (applies_to === "order")
+  const applicableFees = fees.filter((fee) => fee.applies_to === "order");
+
+  // Calculate fee amounts
+  const feeAmounts = applicableFees.map((fee) => ({
+    id: fee.id,
+    name: fee.name,
+    percentage: fee.value,
+    amount: subtotal * (fee.value / 100),
+  }));
+
+  // Calculate total with fees
+  const totalFees = feeAmounts.reduce((sum, fee) => sum + fee.amount, 0);
+  const total = subtotal + totalFees;
 
   const handleIncreaseQuantity = (itemId: number) => {
     setPendingItems((prevItems) =>
@@ -298,6 +314,17 @@ export default function OrdersScreen() {
               ${subtotal.toFixed(2)}
             </ThemedText>
           </View>
+          {/* Fee rows */}
+          {feeAmounts.map((fee) => (
+            <View key={fee.id} style={styles.totalsRow}>
+              <ThemedText style={styles.feeLabel}>
+                {fee.name}
+              </ThemedText>
+              <ThemedText style={styles.feeValue}>
+                {fee.percentage}% (${fee.amount.toFixed(2)})
+              </ThemedText>
+            </View>
+          ))}
           <View style={styles.totalsRow}>
             <ThemedText style={styles.totalLabel}>
               {t("orders.total")}
@@ -744,6 +771,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     color: "#333",
+  },
+  feeLabel: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#999",
+    paddingLeft: 12,
+  },
+  feeValue: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#999",
   },
   totalLabel: {
     fontSize: 18,

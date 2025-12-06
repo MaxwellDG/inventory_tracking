@@ -1,8 +1,8 @@
 export type Fee = {
   id: number;
   name: string;
-  amount: number;
-  type: string;
+  value: number;
+  applies_to: "order"
 };
 
 export type FeeResponse = Fee[];

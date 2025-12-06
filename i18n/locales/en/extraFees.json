@@ -1,6 +1,9 @@
 {
   "title": "Extra Fees",
   "tax": "Tax",
-  "taxPlaceholder": "Enter tax amount"
+  "taxPlaceholder": "Enter tax amount",
+  "saveChanges": "Save Changes",
+  "saveSuccess": "Fees saved successfully",
+  "saveError": "Failed to save fees"
 }
 
