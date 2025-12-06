@@ -26,7 +26,6 @@ export default function CreateCompanyScreen() {
 
   // DEBUG: Check auth state
   const authState = useSelector((state: RootState) => state.auth);
-  console.log("AUTH STATE IN CREATE-COMPANY:", authState);
 
   // const handlePickImage = async () => {
   //   // Request permission
@@ -63,7 +62,6 @@ export default function CreateCompanyScreen() {
         router.replace("/(tabs)/inventory");
       })
       .catch((error) => {
-        console.log("error", error);
         Alert.alert(t("createCompany.error"), error.data.message);
       });
   };

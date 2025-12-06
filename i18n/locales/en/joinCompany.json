@@ -2,5 +2,6 @@
   "title": "Join a company",
   "placeholder": "Enter company ID number",
   "continue": "Continue",
-  "error": "Error joining company"
+  "error": "Error",
+  "failedToJoin": "Failed to join company"
 }

@@ -11,9 +11,6 @@ export default function InventoryScreen() {
   const { t } = useTranslation();
 
   const { data: inventoryData = [], isLoading, error } = useGetInventoryQuery();
-  console.log("inventoryData", inventoryData);
-  console.log("is loading inventory", isLoading);
-  console.log('err: ', error)
 
   return (
     <ThemedView style={styles.container}>

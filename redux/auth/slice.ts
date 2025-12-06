@@ -23,7 +23,6 @@ const authSlice = createSlice({
         company_id?: number;
       }>
     ) => {
-      console.log("action.payload", action.payload);
       state.user = action.payload.user;
       state.token = action.payload.token || null;
       state.refresh_token = action.payload.refresh_token || null;

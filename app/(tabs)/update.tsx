@@ -1,6 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useToast } from "@/contexts/ToastContext";
+import { useApiError } from "@/hooks/use-api-error";
 import {
   useCreateCategoryMutation,
   useCreateItemMutation,
@@ -10,14 +12,12 @@ import {
   useUpdateCategoryMutation,
   useUpdateItemMutation,
 } from "@/redux/products/apiSlice";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
-  Modal,
   ScrollView,
   StyleSheet,
-  Switch,
   TextInput,
   TouchableOpacity,
   View,
@@ -25,6 +25,8 @@ import {
 
 export default function UpdateScreen() {
   const { t } = useTranslation();
+  const { showToast } = useToast();
+  const { showError } = useApiError();
 
   const { data: inventoryData = [], isLoading, error } = useGetInventoryQuery();
 
@@ -83,11 +85,9 @@ export default function UpdateScreen() {
         }).unwrap();
         setNewCategoryName("");
         setShowAddCategory(false);
+        showToast("Category created", "success");
       } catch (error) {
-        Alert.alert(
-          t("inventoryEdit.error"),
-          t("inventoryEdit.failedToAddCategory")
-        );
+        showError(error, t("inventoryEdit.failedToAddCategory"));
       }
     }
   };
@@ -123,14 +123,12 @@ export default function UpdateScreen() {
         setNewItemName("");
         setNewItemQuantity("");
         setNewItemUnit("");
+        showToast("Item created", "success");
         setNewItemPrice("");
         setSelectedCategory("");
         setShowAddItem(false);
       } catch (error) {
-        Alert.alert(
-          t("inventoryEdit.error"),
-          t("inventoryEdit.failedToAddItem")
-        );
+        showError(error, t("inventoryEdit.failedToAddItem"));
       }
     } else {
       Alert.alert(
@@ -150,11 +148,9 @@ export default function UpdateScreen() {
           await deleteCategory(categoryToDelete.id).unwrap();
           setDeleteCategoryName("");
           setShowDeleteCategory(false);
+          showToast("Category deleted", "success");
         } catch (error) {
-          Alert.alert(
-            t("inventoryEdit.error"),
-            t("inventoryEdit.failedToDeleteCategory")
-          );
+          showError(error, t("inventoryEdit.failedToDeleteCategory"));
         }
       } else {
         Alert.alert(
@@ -198,11 +194,9 @@ export default function UpdateScreen() {
           setSelectedEditCategory("");
           setEditCategoryName("");
           setShowEditCategory(false);
+          showToast("Category updated", "success");
         } catch (error) {
-          Alert.alert(
-            t("inventoryEdit.error"),
-            t("inventoryEdit.failedToUpdateCategory")
-          );
+          showError(error, t("inventoryEdit.failedToUpdateCategory"));
         }
       }
     } else {
@@ -247,11 +241,10 @@ export default function UpdateScreen() {
           setEditItemName("");
           setEditItemPrice("");
           setShowEditItem(false);
+          showToast("Item updated", "success");
         } catch (error) {
-          Alert.alert(
-            t("inventoryEdit.error"),
-            t("inventoryEdit.failedToUpdateItem")
-          );
+          console.log("Failed to update item:", error);
+          showError(error, t("inventoryEdit.failedToUpdateItem"));
         }
       }
     } else {
@@ -273,11 +266,9 @@ export default function UpdateScreen() {
           await deleteItem(itemToDelete.id).unwrap();
           setDeleteItemName("");
           setShowDeleteItem(false);
+          showToast("Item deleted", "success");
         } catch (error) {
-          Alert.alert(
-            t("inventoryEdit.error"),
-            t("inventoryEdit.failedToDeleteItem")
-          );
+          showError(error, t("inventoryEdit.failedToDeleteItem"));
         }
       } else {
         Alert.alert(
@@ -428,7 +419,6 @@ export default function UpdateScreen() {
                   onPress={handleEditCategory}
                   disabled={!selectedEditCategory || !editCategoryName.trim()}
                 >
-                  <IconSymbol name="plus" size={16} color="white" />
                   <ThemedText style={styles.addButtonText}>
                     {t("inventoryEdit.updateCategory")}
                   </ThemedText>
@@ -731,7 +721,6 @@ export default function UpdateScreen() {
                         !editItemName.trim()
                       }
                     >
-                      <IconSymbol name="plus" size={16} color="white" />
                       <ThemedText style={styles.addButtonText}>
                         {t("inventoryEdit.updateItem")}
                       </ThemedText>
@@ -845,8 +834,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E7",
   },
   dropdownTitle: {
     fontSize: 16,
@@ -935,13 +922,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F9FA",
     padding: 12,
     marginBottom: 8,
+    marginRight: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#E5E5E7",
   },
   itemOptionSelected: {
-    backgroundColor: "#FF3B30",
-    borderColor: "#FF3B30",
+    backgroundColor: "#007AFF",
+    borderColor: "#007AFF",
   },
   itemOptionText: {
     fontSize: 14,
@@ -1135,4 +1123,3 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
-

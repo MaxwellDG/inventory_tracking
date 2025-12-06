@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Slider } from "@/components/ui/Slider";
+import { useApiError } from "@/hooks/use-api-error";
 import {
   useCreateItemMutation,
   useDeleteItemMutation,
@@ -13,7 +14,6 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Switch,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -24,6 +24,7 @@ interface ManualEntryButtonProps {
 
 export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
   const { t } = useTranslation();
+  const { showError } = useApiError();
   const [updateItem] = useUpdateItemMutation();
   const [createItem] = useCreateItemMutation();
   const [deleteItem] = useDeleteItemMutation();
@@ -139,10 +140,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
 
         handleCloseModal();
       } catch (error) {
-        Alert.alert(
-          t("inventoryEdit.error"),
-          t("inventoryEdit.failedToProcessManualEntry")
-        );
+        showError(error, t("inventoryEdit.failedToProcessManualEntry"));
       }
     }
   };
@@ -182,27 +180,15 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.modalScrollContent}
             >
-              <View style={styles.modalSection}>
-                <View
-                  style={[
-                    styles.toggleContainer,
-                    isBuying
-                      ? styles.toggleContainerBuying
-                      : styles.toggleContainerSelling,
-                  ]}
-                >
-                  <ThemedText style={styles.toggleLabel}>
-                    {isBuying
-                      ? t("inventoryEdit.buying")
-                      : t("inventoryEdit.selling")}
-                  </ThemedText>
-                  <Switch
-                    value={isBuying}
-                    onValueChange={handleToggleChange}
-                    trackColor={{ false: "#E5E5E7", true: "#007AFF" }}
-                    thumbColor={isBuying ? "#FFFFFF" : "#FFFFFF"}
-                  />
-                </View>
+              <View>
+                <Slider
+                  value={isBuying}
+                  onValueChange={handleToggleChange}
+                  leftLabel={t("inventoryEdit.buying")}
+                  rightLabel={t("inventoryEdit.selling")}
+                  leftColor="#007AFF"
+                  rightColor="#FF3B30"
+                />
               </View>
 
               {/* Breadcrumb - shown when category or item is selected */}
@@ -216,6 +202,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
                           setSelectedManualCategory("");
                           setSelectedManualItem("");
                         },
+                        showCloseIcon: true,
                       },
                       ...(selectedManualItem
                         ? [
@@ -224,18 +211,18 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
                               onPress: () => {
                                 setSelectedManualItem("");
                               },
+                              showCloseIcon: true,
                             },
                           ]
                         : []),
                     ]}
-                    separator="/"
                   />
                 </View>
               )}
 
               {/* Category Section - hidden when category is selected */}
               {!selectedManualCategory && (
-                <View style={styles.modalSection}>
+                <View>
                   <ThemedText style={styles.modalSectionTitle}>
                     {t("inventoryEdit.category")}
                   </ThemedText>
@@ -244,37 +231,42 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
                     showsHorizontalScrollIndicator={false}
                     style={styles.modalScroll}
                   >
-                    {inventoryData.map((category) => (
-                      <TouchableOpacity
-                        key={category.id}
-                        style={[
-                          styles.modalOption,
-                          selectedManualCategory === category.name &&
-                            styles.modalOptionSelected,
-                        ]}
-                        onPress={() => {
-                          setSelectedManualCategory(category.name);
-                          setSelectedManualItem("");
-                        }}
-                      >
-                        <ThemedText
+                    {inventoryData
+                      .filter(
+                        (category) =>
+                          category.items && category.items.length > 0
+                      )
+                      .map((category) => (
+                        <TouchableOpacity
+                          key={category.id}
                           style={[
-                            styles.modalOptionText,
+                            styles.modalOption,
                             selectedManualCategory === category.name &&
-                              styles.modalOptionTextSelected,
+                              styles.modalOptionSelected,
                           ]}
+                          onPress={() => {
+                            setSelectedManualCategory(category.name);
+                            setSelectedManualItem("");
+                          }}
                         >
-                          {category.name}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    ))}
+                          <ThemedText
+                            style={[
+                              styles.modalOptionText,
+                              selectedManualCategory === category.name &&
+                                styles.modalOptionTextSelected,
+                            ]}
+                          >
+                            {category.name}
+                          </ThemedText>
+                        </TouchableOpacity>
+                      ))}
                   </ScrollView>
                 </View>
               )}
 
               {/* Item Section - shown when category is selected but item is not */}
               {selectedManualCategory && !selectedManualItem && (
-                <View style={styles.modalSection}>
+                <View>
                   <ThemedText style={styles.modalSectionTitle}>
                     {t("inventoryEdit.item")}
                   </ThemedText>
@@ -308,9 +300,21 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
                 </View>
               )}
 
-              <View style={styles.modalSection}>
+              <View style={styles.quantitySection}>
                 {selectedManualItem ? (
                   <>
+                    <ThemedText style={styles.inventoryInfoText}>
+                      {t("inventoryEdit.available", {
+                        quantity: selectedItemQuantity,
+                        unit:
+                          inventoryData
+                            .find((cat) => cat.name === selectedManualCategory)
+                            ?.items.find(
+                              (item) => item.name === selectedManualItem
+                            )?.typeOfUnit || "units",
+                      })}
+                    </ThemedText>
+
                     <View style={styles.quantityContainer}>
                       <TouchableOpacity
                         style={[
@@ -360,11 +364,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
                       </TouchableOpacity>
                     </View>
                   </>
-                ) : (
-                  <ThemedText style={styles.sliderHelpText}>
-                    {t("inventoryEdit.selectItemToSetQuantity")}
-                  </ThemedText>
-                )}
+                ) : null}
               </View>
 
               <TouchableOpacity
@@ -442,20 +442,16 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   breadcrumbContainer: {
-    marginBottom: 20,
+    marginBottom: 8,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: "#F8F9FA",
     borderRadius: 8,
-  },
-  modalSection: {
-    marginBottom: 20,
   },
   modalSectionTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 12,
+    marginTop: 16,
   },
   modalScroll: {
     maxHeight: 120,
@@ -501,6 +497,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
+  inventoryInfoText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 8,
+  },
+  quantitySection: {
+    marginTop: -12,
+  },
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -545,7 +549,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 40,
   },
   modalSubmitButtonDisabled: {
     backgroundColor: "#A0A0A0",

@@ -14,8 +14,10 @@ import register from "./register.json";
 import resetPassword from "./resetPassword.json";
 import settings from "./settings.json";
 import tabs from "./tabs.json";
+import common from "./common.json";
 
 export default {
+  common,
   company,
   createCompany,
   exportData,

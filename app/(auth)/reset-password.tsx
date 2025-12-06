@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useApiError } from "@/hooks/use-api-error";
 import { useResetPasswordMutation } from "@/redux/auth/apiSlice";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
@@ -17,6 +18,7 @@ import {
 
 export default function ResetPasswordScreen() {
   const { t } = useTranslation();
+  const { showError } = useApiError();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -79,11 +81,8 @@ export default function ResetPasswordScreen() {
           },
         ]
       );
-    } catch (error: any) {
-      Alert.alert(
-        t("resetPassword.error"),
-        error?.data?.message || t("resetPassword.failedToReset")
-      );
+    } catch (error) {
+      showError(error, t("resetPassword.failedToReset"));
     }
   };
 

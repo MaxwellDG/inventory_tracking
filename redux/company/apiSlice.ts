@@ -9,7 +9,6 @@ export const companiesApi = createApi({
     getCompany: builder.query<{ data: UserCompany | Company }, number>({
       query: (id) => `/companies/${id}`,
       transformResponse: (response: any) => {
-        console.log("RAW COMPANY RESPONSE:", response);
         return response;
       },
     }),

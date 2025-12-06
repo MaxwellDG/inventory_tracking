@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useApiError } from "@/hooks/use-api-error";
 import { useRegisterMutation } from "@/redux/auth/apiSlice";
 import { save, saveSecure, STORAGE_KEYS } from "@/redux/auth/secureStorage";
 import { setCredentials } from "@/redux/auth/slice";
@@ -20,6 +21,7 @@ import { useDispatch } from "react-redux";
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
+  const { showError } = useApiError();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +72,6 @@ export default function RegisterScreen() {
         password,
         password_confirmation: confirmPassword,
       }).unwrap();
-      console.log("result", result);
 
       // Update Redux state
       dispatch(setCredentials(result));
@@ -84,11 +85,8 @@ export default function RegisterScreen() {
       }
 
       router.replace("/company");
-    } catch (error: any) {
-      Alert.alert(
-        t("register.error"),
-        error?.data?.message || t("register.registrationFailed")
-      );
+    } catch (error) {
+      showError(error, t("register.registrationFailed"));
     }
   };
 
@@ -280,12 +278,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 30,
+    marginBottom: 30,
   },
   footerText: {
-    fontSize: 16,
+    fontSize: 14,
+    opacity: 0.7,
   },
   signInText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#007AFF",
     fontWeight: "600",
   },

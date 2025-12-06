@@ -282,7 +282,6 @@ export default function OrdersScreen() {
             style={styles.submitButton}
             onPress={() => {
               // TODO: Submit order to API
-              console.log("Order submitted:", pendingItems);
               Alert.alert(
                 t("orders.orderSubmitted"),
                 t("orders.orderSubmittedSuccess", {

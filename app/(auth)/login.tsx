@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useApiError } from "@/hooks/use-api-error";
 import { useLoginMutation } from "@/redux/auth/apiSlice";
 import { save, saveSecure, STORAGE_KEYS } from "@/redux/auth/secureStorage";
 import { setCredentials } from "@/redux/auth/slice";
@@ -20,6 +21,7 @@ import { useDispatch } from "react-redux";
 
 export default function LoginScreen() {
   const { t } = useTranslation();
+  const { showError } = useApiError();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [login, { isLoading }] = useLoginMutation();
@@ -53,7 +55,6 @@ export default function LoginScreen() {
 
     try {
       const result = await login({ email, password }).unwrap();
-      console.log("result", result);
 
       // Update Redux state
       dispatch(setCredentials(result));
@@ -68,12 +69,8 @@ export default function LoginScreen() {
 
       // Navigate to inventory tab
       router.replace("/(tabs)/inventory");
-    } catch (error: any) {
-      console.log("error", error);
-      Alert.alert(
-        t("login.error"),
-        error?.data?.message || t("login.loginFailed")
-      );
+    } catch (error) {
+      showError(error, t("login.loginFailed"));
     }
   };
 
@@ -136,14 +133,14 @@ export default function LoginScreen() {
               />
             </View>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.forgotPassword}
               onPress={handleForgotPassword}
             >
               <ThemedText style={styles.forgotPasswordText}>
                 {t("login.forgotPassword")}
               </ThemedText>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={[

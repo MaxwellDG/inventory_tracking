@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useApiError } from "@/hooks/use-api-error";
 import { updateUser } from "@/redux/auth/slice";
 import { useJoinCompanyMutation } from "@/redux/company/apiSlice";
 import { router } from "expo-router";
@@ -18,6 +19,7 @@ import { useDispatch } from "react-redux";
 
 export default function JoinCompanyScreen() {
   const { t } = useTranslation();
+  const { showError } = useApiError();
   const [companyId, setCompanyId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [joinCompany, { isLoading: isJoining }] = useJoinCompanyMutation();
@@ -31,21 +33,11 @@ export default function JoinCompanyScreen() {
     setIsLoading(true);
 
     try {
-      console.log("Joining company with ID:", companyId);
-      await joinCompany({ company_id: parseInt(companyId) })
-        .unwrap()
-        .then((response) => {
-          console.log("response", response);
-          dispatch(updateUser({ company_id: response.company.id }));
-          router.replace("/(tabs)/inventory");
-        })
-        .catch((error) => {
-          console.log("error", error);
-          Alert.alert(t("joinCompany.error"), error.data?.message);
-        });
-    } catch (error: any) {
-      console.log("error", error);
-      Alert.alert(t("joinCompany.error"), error.message);
+      const response = await joinCompany({ company_id: parseInt(companyId) }).unwrap();
+      dispatch(updateUser({ company_id: response.company.id }));
+      router.replace("/(tabs)/inventory");
+    } catch (error) {
+      showError(error, t("joinCompany.failedToJoin"));
     } finally {
       setIsLoading(false);
     }

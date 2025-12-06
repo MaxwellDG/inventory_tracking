@@ -7,8 +7,6 @@ export default function Index() {
     (state: RootState) => state.auth.isAuthenticated
   );
 
-  console.log("isAuthenticated", isAuthenticated);
-
   if (isAuthenticated) {
     return <Redirect href="/(tabs)/inventory" />;
   }

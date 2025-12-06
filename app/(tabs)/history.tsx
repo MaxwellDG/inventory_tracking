@@ -34,9 +34,6 @@ export default function HistoryScreen() {
     page: pageNumber,
   });
 
-  console.log("orders", orders);
-  console.log("error", error);
-
   const toggleExpanded = (orderId: string) => {
     setExpandedOrders((prev) => {
       const newSet = new Set(prev);

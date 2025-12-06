@@ -43,7 +43,6 @@ function AuthRehydrator({ children }: { children: React.ReactNode }) {
               refresh_token: refreshToken || undefined,
             })
           );
-          console.log("Auth tokens rehydrated from storage");
 
           // Fetch user data from the API
           try {
@@ -59,9 +58,7 @@ function AuthRehydrator({ children }: { children: React.ReactNode }) {
                 refresh_token: refreshToken || undefined,
               })
             );
-            console.log("User data fetched from API", result);
           } catch (error) {
-            console.error("Failed to fetch user data:", error);
             // If fetching user data fails, clear the invalid token
             rootStore.dispatch(setCredentials({ user: null, token: null }));
           }

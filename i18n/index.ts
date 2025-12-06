@@ -6,7 +6,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 // have a look at the Quick start guide
 // for passing in lng and translations on init
 
-import enTranslations from "./locales";
+import enTranslations from "./locales/en";
 
 i18n
   // detect user language

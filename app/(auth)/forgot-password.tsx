@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useApiError } from "@/hooks/use-api-error";
 import { useForgotPasswordMutation } from "@/redux/auth/apiSlice";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -17,6 +18,7 @@ import {
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
+  const { showError } = useApiError();
   const [email, setEmail] = useState("");
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
@@ -51,11 +53,8 @@ export default function ForgotPasswordScreen() {
           },
         ]
       );
-    } catch (error: any) {
-      Alert.alert(
-        t("forgotPassword.error"),
-        error?.data?.message || t("forgotPassword.failedToSend")
-      );
+    } catch (error) {
+      showError(error, t("forgotPassword.failedToSend"));
     }
   };
 

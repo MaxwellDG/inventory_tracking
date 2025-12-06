@@ -60,18 +60,10 @@ export default function SettingsScreen() {
             console.error("Logout API call failed:", error);
             // Continue with logout even if server call fails
           } finally {
-            console.log("finally");
-
             // Clear all persisted auth data
             await clearAllAuthData();
-
-            console.log("clearAllAuthData");
-
             // Clear Redux state
             dispatch(clearCredentials());
-
-            console.log("clearCredentials");
-
             // Navigation will be handled automatically by _layout.tsx useEffect
           }
         },
