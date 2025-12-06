@@ -34,7 +34,7 @@ export const productsApi = createApi({
     updateCategory: builder.mutation<Category, Category>({
       query(body) {
         return {
-          method: "POST",
+          method: "PATCH",
           url: URL_PRODUCTS_CATEGORIES,
           body,
         };
@@ -63,8 +63,8 @@ export const productsApi = createApi({
     updateItem: builder.mutation<Item, Item>({
       query(body) {
         return {
-          method: "POST",
-          url: URL_PRODUCTS_ITEMS,
+          method: "PATCH",
+          url: `${URL_PRODUCTS_ITEMS}/${body.id}`,
           body,
         };
       },

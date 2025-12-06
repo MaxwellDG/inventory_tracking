@@ -70,7 +70,10 @@ export function Inventory({ inventoryData, isLoading, error }: InventoryProps) {
     return (
       <ThemedView key={category} style={styles.categorySection}>
         <TouchableOpacity
-          style={styles.categoryHeader}
+          style={[
+            styles.categoryHeader,
+            isExpanded && styles.categoryHeaderExpanded,
+          ]}
           onPress={() => toggleSection(category)}
         >
           <View style={styles.categoryHeaderLeft}>
@@ -139,6 +142,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
+  },
+  categoryHeaderExpanded: {
     borderBottomWidth: 1,
     borderBottomColor: "#E5E5E7",
   },

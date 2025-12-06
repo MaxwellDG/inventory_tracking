@@ -5,7 +5,7 @@ import { ThemedView } from "@/components/themed-view";
 import { useGetInventoryQuery } from "@/redux/products/apiSlice";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function InventoryScreen() {
   const { t } = useTranslation();
@@ -27,13 +27,17 @@ export default function InventoryScreen() {
       </View>
 
       {/* Inventory Content */}
-      <View style={styles.scrollContainer}>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Inventory
           inventoryData={inventoryData}
           isLoading={isLoading}
           error={!!error}
         />
-      </View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -58,5 +62,8 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
 });
