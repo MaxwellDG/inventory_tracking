@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Slider } from "@/components/ui/Slider";
+import { useToast } from "@/contexts/ToastContext";
 import { useApiError } from "@/hooks/use-api-error";
 import {
   useCreateItemMutation,
@@ -24,6 +25,7 @@ interface ManualEntryButtonProps {
 
 export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { showError } = useApiError();
   const [updateItem] = useUpdateItemMutation();
   const [createItem] = useCreateItemMutation();
@@ -102,7 +104,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
             await createItem({
               name: selectedManualItem,
               quantity: buyQuantity,
-              typeOfUnit: "unit",
+              type_of_unit: "unit",
               category_id: categoryId,
             }).unwrap();
           }
@@ -139,6 +141,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
         }
 
         handleCloseModal();
+        showToast("Inventory updated", "success");
       } catch (error) {
         showError(error, t("inventoryEdit.failedToProcessManualEntry"));
       }
@@ -311,7 +314,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
                             .find((cat) => cat.name === selectedManualCategory)
                             ?.items.find(
                               (item) => item.name === selectedManualItem
-                            )?.typeOfUnit || "units",
+                            )?.type_of_unit || "units",
                       })}
                     </ThemedText>
 

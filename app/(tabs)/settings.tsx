@@ -73,7 +73,9 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>{t("settings.title")}</ThemedText>
+      <ThemedText type="title" style={styles.title}>
+        {t("settings.title")}
+      </ThemedText>
 
       {/* Company Info Subtitle */}
       {company && (
@@ -120,6 +122,19 @@ export default function SettingsScreen() {
           <View style={styles.exportContent}>
             <IconSymbol name="person.2.fill" size={24} color="#007AFF" />
             <Text style={styles.exportText}>{t("settings.members")}</Text>
+          </View>
+          <IconSymbol name="chevron.right" size={16} color="#999" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => router.push("/extra-fees")}
+        >
+          <View style={styles.exportContent}>
+            <IconSymbol name="building.2.fill" size={24} color="#007AFF" />
+            <Text style={styles.exportText}>{t("settings.extraFees")}</Text>
           </View>
           <IconSymbol name="chevron.right" size={16} color="#999" />
         </TouchableOpacity>

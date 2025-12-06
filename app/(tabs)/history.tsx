@@ -177,7 +177,7 @@ export default function HistoryScreen() {
                     {order.items && Array.isArray(order.items) ? (
                       order.items.map((item) => (
                         <ThemedText key={item.id} style={styles.orderText}>
-                          {item.name} ({item.quantity} {item.typeOfUnit})
+                          {item.name} ({item.quantity} {item.type_of_unit})
                         </ThemedText>
                       ))
                     ) : (

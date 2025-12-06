@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { authApi } from "./auth/apiSlice";
 import authReducer from "./auth/slice";
 import { exportApi } from "./export/apiSlice";
+import { feesApi } from "./fees/apiSlice";
 import { ordersApi } from "./orders/apiSlice";
 import { productsApi } from "./products/apiSlice";
 import { companiesApi } from "./company/apiSlice";
@@ -14,6 +15,7 @@ const rootStore = configureStore({
     [ordersApi.reducerPath]: ordersApi.reducer,
     [exportApi.reducerPath]: exportApi.reducer,
     [companiesApi.reducerPath]: companiesApi.reducer,
+    [feesApi.reducerPath]: feesApi.reducer,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware({
@@ -26,7 +28,8 @@ const rootStore = configureStore({
       .concat(productsApi.middleware)
       .concat(ordersApi.middleware)
       .concat(exportApi.middleware)
-      .concat(companiesApi.middleware);
+      .concat(companiesApi.middleware)
+      .concat(feesApi.middleware);
   },
 });
 

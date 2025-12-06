@@ -84,7 +84,8 @@ export default function OrdersScreen() {
         name: selectedItem.name,
         category_id: selectedCategory.id,
         quantity: orderQuantity,
-        typeOfUnit: selectedItem.typeOfUnit,
+        type_of_unit: selectedItem.type_of_unit,
+        price: selectedItem.price,
       };
 
       setPendingItems([...pendingItems, newItem]);
@@ -105,6 +106,17 @@ export default function OrdersScreen() {
     setPendingItems([]);
     setShowClearModal(false);
   };
+
+  // Calculate subtotal and total
+  const calculateSubtotal = () => {
+    return pendingItems.reduce((total, item) => {
+      const itemPrice = item.price || 0;
+      return total + itemPrice * item.quantity;
+    }, 0);
+  };
+
+  const subtotal = calculateSubtotal();
+  const total = subtotal; // For now, total equals subtotal
 
   const handleIncreaseQuantity = (itemId: number) => {
     setPendingItems((prevItems) =>
@@ -275,6 +287,28 @@ export default function OrdersScreen() {
         )}
       </ScrollView>
 
+      {/* Totals Container */}
+      {pendingItems.length > 0 && (
+        <View style={styles.totalsContainer}>
+          <View style={styles.totalsRow}>
+            <ThemedText style={styles.totalsLabel}>
+              {t("orders.subtotal")}
+            </ThemedText>
+            <ThemedText style={styles.totalsValue}>
+              ${subtotal.toFixed(2)}
+            </ThemedText>
+          </View>
+          <View style={styles.totalsRow}>
+            <ThemedText style={styles.totalLabel}>
+              {t("orders.total")}
+            </ThemedText>
+            <ThemedText style={styles.totalValue}>
+              ${total.toFixed(2)}
+            </ThemedText>
+          </View>
+        </View>
+      )}
+
       {/* Submit Button */}
       {pendingItems.length > 0 && (
         <View style={styles.submitContainer}>
@@ -384,7 +418,7 @@ export default function OrdersScreen() {
                             !selectedCategory && styles.itemOptionDisabled,
                           ]}
                         >
-                          {item.name} ({item.quantity} {item.typeOfUnit})
+                          {item.name} ({item.quantity} {item.type_of_unit})
                         </ThemedText>
                       </TouchableOpacity>
                     ))}
@@ -440,7 +474,7 @@ export default function OrdersScreen() {
                     <ThemedText style={styles.quantityInfo}>
                       {t("orders.available", {
                         quantity: selectedItem.quantity,
-                        unit: selectedItem.typeOfUnit,
+                        unit: selectedItem.type_of_unit,
                       })}
                     </ThemedText>
                   </View>
@@ -687,13 +721,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  // Totals container styles
+  totalsContainer: {
+    backgroundColor: "white",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5E7",
+  },
+  totalsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  totalsLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#666",
+  },
+  totalsValue: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#007AFF",
+  },
   // Submit button styles
   submitContainer: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#E5E5E7",
   },
   submitButton: {
     backgroundColor: "#007AFF",

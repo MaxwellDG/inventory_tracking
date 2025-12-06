@@ -122,7 +122,7 @@ export default function UpdateScreen() {
         await createItem({
           name: newItemName.trim(),
           quantity: parseInt(newItemQuantity) || 0,
-          typeOfUnit: newItemUnit.trim(),
+          type_of_unit: newItemUnit.trim(),
           price: newItemPrice.trim() ? parseFloat(newItemPrice) : undefined,
           category_id: categoryId,
         }).unwrap();

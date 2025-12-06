@@ -57,7 +57,7 @@ export function Inventory({ inventoryData, isLoading, error }: InventoryProps) {
       <View style={styles.itemHeader}>
         <ThemedText style={styles.itemName}>{item.name}</ThemedText>
         <ThemedText style={styles.itemQuantity}>
-          {item.quantity} {item.typeOfUnit}
+          {item.quantity} {item.type_of_unit}
         </ThemedText>
       </View>
     </ThemedView>
@@ -176,16 +176,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
   },
   itemName: {
     fontSize: 18,
     fontWeight: "600",
     color: "#000",
+    flex: 1,
+    flexShrink: 1,
   },
   itemQuantity: {
     fontSize: 16,
     fontWeight: "500",
     color: "#007AFF",
+    flexShrink: 0,
   },
   emptyState: {
     flex: 1,

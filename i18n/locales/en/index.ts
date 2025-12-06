@@ -1,6 +1,7 @@
 import company from "./company.json";
 import createCompany from "./createCompany.json";
 import exportData from "./exportData.json";
+import extraFees from "./extraFees.json";
 import forgotPassword from "./forgotPassword.json";
 import history from "./history.json";
 import inventory from "./inventory.json";
@@ -21,6 +22,7 @@ export default {
   company,
   createCompany,
   exportData,
+  extraFees,
   forgotPassword,
   history,
   inventory,

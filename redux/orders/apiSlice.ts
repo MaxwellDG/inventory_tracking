@@ -49,8 +49,8 @@ export const ordersApi = createApi({
       {
         query(body) {
           return {
-            method: "POST",
-            url: URL_ORDERS,
+            method: "PATCH",
+            url: `${URL_ORDERS}/${body.order_uuid}`,
             body,
           };
         },

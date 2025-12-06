@@ -21,6 +21,8 @@
   "clearAll": "Clear All",
   "error": "Error",
   "cannotOrderQuantity": "Cannot order {{orderQuantity}} items. Only {{availableQuantity}} available in inventory.",
-  "selectBothCategoryAndItem": "Please select both category and item"
+  "selectBothCategoryAndItem": "Please select both category and item",
+  "subtotal": "Subtotal:",
+  "total": "Total:"
 }
 
