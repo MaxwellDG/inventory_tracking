@@ -3,12 +3,13 @@ import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useToast } from "@/contexts/ToastContext";
+import { Fee } from "@/redux/fees/types";
 import {
   useDeleteOrderMutation,
   useGetOrderQuery,
   useUpdateOrderMutation,
 } from "@/redux/orders/apiSlice";
-import { Fee, OrderListItem } from "@/redux/orders/types";
+import { OrderListItem } from "@/redux/orders/types";
 import { useUpdateItemQuantityMutation } from "@/redux/products/apiSlice";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -40,8 +41,6 @@ export default function OrderDetailsScreen() {
     isLoading,
     error,
   } = useGetOrderQuery(orderData.uuid);
-
-  console.log("Full order: ", fullOrder);
 
   const [receiptId, setReceiptId] = useState("");
   const [initialReceiptId, setInitialReceiptId] = useState("");

@@ -100,6 +100,13 @@ export default function HistoryScreen() {
     if (selectedDate) {
       const dateWithTime = new Date(selectedDate);
       dateWithTime.setHours(0, 0, 0, 0);
+
+      // Only update if the selected date is not after the end date
+      if (endDate && dateWithTime > endDate) {
+        // Don't update if start date is after end date
+        return;
+      }
+
       setStartDate(dateWithTime);
     }
   };
@@ -109,6 +116,13 @@ export default function HistoryScreen() {
     if (selectedDate) {
       const dateWithTime = new Date(selectedDate);
       dateWithTime.setHours(23, 59, 59, 999);
+
+      // Only update if the selected date is not before the start date
+      if (startDate && dateWithTime < startDate) {
+        // Don't update if end date is before start date
+        return;
+      }
+
       setEndDate(dateWithTime);
     }
   };
@@ -218,6 +232,11 @@ export default function HistoryScreen() {
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={onStartDateChange}
+          maximumDate={
+            endDate
+              ? new Date(Math.min(endDate.getTime(), new Date().getTime()))
+              : new Date()
+          }
         />
       )}
 
@@ -227,6 +246,8 @@ export default function HistoryScreen() {
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={onEndDateChange}
+          minimumDate={startDate || undefined}
+          maximumDate={new Date()}
         />
       )}
     </ThemedView>
