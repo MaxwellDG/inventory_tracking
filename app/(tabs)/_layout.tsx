@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { CustomTabBarButton } from "@/components/CustomTabBarButton";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function TabLayout() {
@@ -17,7 +16,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: "#0a7ea4", // Force blue tint in all modes
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarShowLabel: false,
@@ -26,6 +25,7 @@ export default function TabLayout() {
           height: 90,
           paddingBottom: 20,
           overflow: "visible",
+          backgroundColor: "#FFFFFF", // Force white background in all modes
         },
       }}
     >

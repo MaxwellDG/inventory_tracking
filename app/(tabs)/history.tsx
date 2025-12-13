@@ -1,3 +1,4 @@
+import { Paginator } from "@/components/Paginator";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -5,7 +6,8 @@ import { useGetOrdersQuery } from "@/redux/orders/apiSlice";
 import { ORDER_STATUS } from "@/redux/orders/types";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
-import React, { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Platform,
@@ -15,34 +17,70 @@ import {
   View,
 } from "react-native";
 
+// Set startDate to yesterday at 00:00:00
+const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+yesterday.setHours(0, 0, 0, 0);
+
+// Set endDate to today at 23:59:59
+const today = new Date();
+today.setHours(23, 59, 59, 999);
+
 export default function HistoryScreen() {
   const { t } = useTranslation();
-  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const router = useRouter();
+
+  const [startDate, setStartDate] = useState<Date | null>(yesterday);
+  const [endDate, setEndDate] = useState<Date | null>(today);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [selectedStatus, setSelectedStatus] =
-    useState<keyof typeof ORDER_STATUS>("OPEN");
+    useState<keyof typeof ORDER_STATUS>("open");
   const [pageNumber, setPageNumber] = useState(1);
 
   const {
-    data: orders = [],
+    data: ordersResponse,
     isLoading,
     error,
-  } = useGetOrdersQuery({
-    page: pageNumber,
-  });
+    refetch,
+  } = useGetOrdersQuery(
+    {
+      page: pageNumber,
+      startDate: startDate?.toISOString().split("T")[0],
+      endDate: endDate?.toISOString().split("T")[0],
+      status: selectedStatus,
+    },
+    { pollingInterval: 10000 }
+  );
 
-  const toggleExpanded = (orderId: string) => {
-    setExpandedOrders((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(orderId)) {
-        newSet.delete(orderId);
-      } else {
-        newSet.add(orderId);
-      }
-      return newSet;
+  const orders = ordersResponse?.data || [];
+  const pagination = ordersResponse?.pagination;
+
+  // Refetch data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
+
+  const handlePreviousPage = () => {
+    if (pagination?.hasPrevious) {
+      setPageNumber(pageNumber - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination?.hasNext) {
+      setPageNumber(pageNumber + 1);
+    }
+  };
+
+  const handleOrderPress = (order: (typeof orders)[0]) => {
+    router.push({
+      pathname: "/order-details",
+      params: {
+        order: JSON.stringify(order),
+      },
     });
   };
 
@@ -54,22 +92,21 @@ export default function HistoryScreen() {
     setShowEndDatePicker(true);
   };
 
-  const handleClearDates = () => {
-    setStartDate(null);
-    setEndDate(null);
-  };
-
   const onStartDateChange = (event: any, selectedDate?: Date) => {
     setShowStartDatePicker(Platform.OS === "ios");
     if (selectedDate) {
-      setStartDate(selectedDate);
+      const dateWithTime = new Date(selectedDate);
+      dateWithTime.setHours(0, 0, 0, 0);
+      setStartDate(dateWithTime);
     }
   };
 
   const onEndDateChange = (event: any, selectedDate?: Date) => {
     setShowEndDatePicker(Platform.OS === "ios");
     if (selectedDate) {
-      setEndDate(selectedDate);
+      const dateWithTime = new Date(selectedDate);
+      dateWithTime.setHours(23, 59, 59, 999);
+      setEndDate(dateWithTime);
     }
   };
 
@@ -81,16 +118,6 @@ export default function HistoryScreen() {
             <ThemedText type="title" style={styles.title}>
               {t("history.title")}
             </ThemedText>
-            {(startDate || endDate) && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClearDates}
-              >
-                <ThemedText style={styles.clearButtonText}>
-                  {t("history.clear")}
-                </ThemedText>
-              </TouchableOpacity>
-            )}
           </View>
         </View>
         <View style={styles.filterRow}>
@@ -100,15 +127,12 @@ export default function HistoryScreen() {
               onValueChange={(value) => setSelectedStatus(value)}
               style={styles.statusPicker}
             >
-              <Picker.Item
-                label={t("history.completed")}
-                value="COMPLETED"
-              />
+              <Picker.Item label={t("history.completed")} value="completed" />
               <Picker.Item
                 label={t("history.pendingPayment")}
-                value="PENDING_PAYMENT"
+                value="pending"
               />
-              <Picker.Item label={t("history.open")} value="OPEN" />
+              <Picker.Item label={t("history.open")} value="open" />
             </Picker>
           </View>
           <View style={styles.dateFilterContainer}>
@@ -154,51 +178,36 @@ export default function HistoryScreen() {
             </ThemedText>
           </View>
         ) : (
-          orders.map((order, index) => {
-            const isExpanded = expandedOrders.has(order.uuid);
-            return (
-              <TouchableOpacity
-                key={order.uuid}
-                style={styles.orderCard}
-                onPress={() => toggleExpanded(order.uuid)}
-              >
-                <View style={styles.orderHeader}>
-                  <View style={styles.orderHeaderLeft}>
-                    <ThemedText style={styles.orderId}>{order.uuid}</ThemedText>
-                    <IconSymbol
-                      name={isExpanded ? "chevron.up" : "chevron.down"}
-                      size={16}
-                      color="#666"
-                    />
-                  </View>
+          orders.map((order, index) => (
+            <TouchableOpacity
+              key={order.uuid}
+              style={styles.orderCard}
+              onPress={() => handleOrderPress(order)}
+            >
+              <View style={styles.orderHeader}>
+                <ThemedText style={styles.orderId}>
+                  {order.uuid.slice(0, 8)}
+                </ThemedText>
+                <View style={styles.orderHeaderRight}>
+                  <ThemedText style={styles.orderTotal}>
+                    ${order.total}
+                  </ThemedText>
+                  <IconSymbol name="chevron.right" size={16} color="#666" />
                 </View>
-                {isExpanded && (
-                  <View style={styles.expandedContent}>
-                    {order.items && Array.isArray(order.items) ? (
-                      order.items.map((item) => (
-                        <ThemedText key={item.id} style={styles.orderText}>
-                          {item.name} ({item.quantity} {item.type_of_unit})
-                        </ThemedText>
-                      ))
-                    ) : (
-                      <ThemedText style={styles.orderText}>
-                        {t("history.noItemsAvailable")}
-                      </ThemedText>
-                    )}
-                    <ThemedText style={styles.orderUser}>
-                      {t("history.createdBy", { name: order.owner.name })}
-                    </ThemedText>
-                    <ThemedText style={styles.orderDate}>
-                      {new Date(order.created_at).toLocaleDateString()} at{" "}
-                      {new Date(order.created_at).toLocaleTimeString()}
-                    </ThemedText>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })
+              </View>
+            </TouchableOpacity>
+          ))
         )}
       </ScrollView>
+
+      {orders.length > 0 && pagination && (
+        <Paginator
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPrevious={handlePreviousPage}
+          onNext={handleNextPage}
+        />
+      )}
 
       {showStartDatePicker && (
         <DateTimePicker
@@ -270,14 +279,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  clearButton: {
-    paddingHorizontal: 8,
-  },
-  clearButtonText: {
-    color: "#007AFF",
-    fontSize: 16,
-    fontWeight: "500",
-  },
   dateFilterButton: {
     backgroundColor: "#F0F0F0",
     borderRadius: 20,
@@ -328,43 +329,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  orderHeaderLeft: {
+  orderHeaderRight: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    gap: 8,
   },
   orderId: {
     fontSize: 16,
     fontWeight: "600",
     color: "#007AFF",
-    marginRight: 8,
-    flex: 1,
   },
-  expandedContent: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#E5E5E7",
-  },
-  orderText: {
-    fontSize: 16,
-    fontWeight: "500",
+  orderTotal: {
+    fontSize: 18,
+    fontWeight: "bold",
     color: "#333",
-    flex: 1,
-  },
-  categoryText: {
-    color: "#999",
-  },
-  orderUser: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: "#666",
-    marginTop: 4,
-  },
-  orderDate: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
   },
   deleteButton: {
     padding: 8,

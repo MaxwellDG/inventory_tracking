@@ -1,9 +1,14 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "../api";
-import { Item } from "../products/types";
+import { productsApi } from "../products/apiSlice";
 import { PaginationFilters } from "../types";
 import { API_SLICE_NAME, URL_ORDERS } from "./const";
-import { Order } from "./types";
+import {
+  CreateOrderRequest,
+  Order,
+  PaginatedOrdersResponse,
+  UpdateOrderRequest,
+} from "./types";
 
 export const ordersApi = createApi({
   reducerPath: API_SLICE_NAME,
@@ -17,25 +22,29 @@ export const ordersApi = createApi({
         };
       },
     }),
-    getOrders: builder.query<Order[], PaginationFilters>({
+    getOrders: builder.query<PaginatedOrdersResponse, PaginationFilters>({
       query(params) {
         const queryParams = new URLSearchParams();
         if (params.page !== undefined) {
           queryParams.append("page", params.page.toString());
         }
         if (params.startDate !== undefined) {
-          queryParams.append("startDate", params.startDate.toString());
+          queryParams.append("start_date", params.startDate.toString());
         }
         if (params.endDate !== undefined) {
-          queryParams.append("endDate", params.endDate.toString());
+          queryParams.append("end_date", params.endDate.toString());
+        }
+        if (params.status !== undefined) {
+          queryParams.append("status", params.status);
         }
         const queryString = queryParams.toString();
+
         return {
           url: URL_ORDERS + (queryString ? `?${queryString}` : ""),
         };
       },
     }),
-    createOrder: builder.mutation<Order, Item[]>({
+    createOrder: builder.mutation<Order, CreateOrderRequest>({
       query(body) {
         return {
           method: "POST",
@@ -44,19 +53,27 @@ export const ordersApi = createApi({
         };
       },
       invalidatesTags: ["orders"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Invalidate inventory cache after successful order creation
+          dispatch(productsApi.util.invalidateTags(["inventory"]));
+        } catch {
+          // Do nothing on error
+        }
+      },
     }),
-    updateOrder: builder.mutation<Order, { order_uuid: string; items: Item[] }>(
-      {
-        query(body) {
-          return {
-            method: "PATCH",
-            url: `${URL_ORDERS}/${body.order_uuid}`,
-            body,
-          };
-        },
-        invalidatesTags: ["orders"],
-      }
-    ),
+    updateOrder: builder.mutation<Order, UpdateOrderRequest>({
+      query(body) {
+        const { order_uuid, ...updateData } = body;
+        return {
+          method: "PATCH",
+          url: `${URL_ORDERS}/${order_uuid}`,
+          body: updateData,
+        };
+      },
+      invalidatesTags: ["orders"],
+    }),
     deleteOrder: builder.mutation<Order, string>({
       query(uuid) {
         return {

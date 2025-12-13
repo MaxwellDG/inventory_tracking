@@ -6,6 +6,7 @@
   "submitWithCount": "Submit ({{count}})",
   "orderSubmitted": "Order Submitted",
   "orderSubmittedSuccess": "Submitted 1 order with {{count}} item(s) successfully!",
+  "orderSubmitError": "Failed to submit order. Please try again.",
   "addToOrder": "Add to order",
   "loadingInventory": "Loading inventory...",
   "selectCategory": "Select Category",
@@ -25,4 +26,3 @@
   "subtotal": "Subtotal:",
   "total": "Total:"
 }
-

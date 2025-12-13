@@ -79,6 +79,19 @@ export const productsApi = createApi({
       },
       invalidatesTags: ["inventory"],
     }),
+    updateItemQuantity: builder.mutation<
+      Item,
+      { id: number; quantity: number }
+    >({
+      query({ id, quantity }) {
+        return {
+          method: "PATCH",
+          url: `${URL_PRODUCTS_ITEMS}/${id}/quantity`,
+          body: { quantity },
+        };
+      },
+      invalidatesTags: ["inventory"],
+    }),
   }),
 });
 
@@ -90,4 +103,5 @@ export const {
   useDeleteItemMutation,
   useUpdateCategoryMutation,
   useUpdateItemMutation,
+  useUpdateItemQuantityMutation,
 } = productsApi;

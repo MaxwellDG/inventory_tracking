@@ -1,7 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useToast } from "@/contexts/ToastContext";
 import { useGetFeesQuery } from "@/redux/fees/apiSlice";
+import { useCreateOrderMutation } from "@/redux/orders/apiSlice";
 import { useGetInventoryQuery } from "@/redux/products/apiSlice";
 import { Category, Item } from "@/redux/products/types";
 import React, { useState } from "react";
@@ -20,6 +22,7 @@ import {
 
 export default function OrdersScreen() {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category>();
@@ -29,6 +32,7 @@ export default function OrdersScreen() {
   const { data: inventoryData, isLoading: inventoryLoading } =
     useGetInventoryQuery();
   const { data: fees = [] } = useGetFeesQuery();
+  const [createOrder, { isLoading: isSubmitting }] = useCreateOrderMutation();
 
   // Helper functions to work with inventory data
   const getItemsByCategory = (categoryId: number) => {
@@ -317,9 +321,7 @@ export default function OrdersScreen() {
           {/* Fee rows */}
           {feeAmounts.map((fee) => (
             <View key={fee.id} style={styles.totalsRow}>
-              <ThemedText style={styles.feeLabel}>
-                {fee.name}
-              </ThemedText>
+              <ThemedText style={styles.feeLabel}>{fee.name}</ThemedText>
               <ThemedText style={styles.feeValue}>
                 {fee.percentage}% (${fee.amount.toFixed(2)})
               </ThemedText>
@@ -340,21 +342,39 @@ export default function OrdersScreen() {
       {pendingItems.length > 0 && (
         <View style={styles.submitContainer}>
           <TouchableOpacity
-            style={styles.submitButton}
-            onPress={() => {
-              // TODO: Submit order to API
-              Alert.alert(
-                t("orders.orderSubmitted"),
-                t("orders.orderSubmittedSuccess", {
-                  count: pendingItems.length,
-                })
-              );
-              setPendingItems([]); // Clear pending items after submission
+            style={[
+              styles.submitButton,
+              isSubmitting && styles.submitButtonDisabled,
+            ]}
+            onPress={async () => {
+              try {
+                const orderPayload = {
+                  items: pendingItems.map((item) => ({
+                    id: item.id,
+                    quantity: item.quantity,
+                  })),
+                };
+
+                await createOrder(orderPayload).unwrap();
+
+                showToast("Order created", "success");
+                setPendingItems([]); // Clear pending items after submission
+              } catch (error: any) {
+                showToast(
+                  error?.data?.message || t("orders.orderSubmitError"),
+                  "error"
+                );
+              }
             }}
+            disabled={isSubmitting}
           >
-            <ThemedText style={styles.submitButtonText}>
-              {t("orders.submitWithCount", { count: pendingItems.length })}
-            </ThemedText>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <ThemedText style={styles.submitButtonText}>
+                {t("orders.submitWithCount", { count: pendingItems.length })}
+              </ThemedText>
+            )}
           </TouchableOpacity>
         </View>
       )}
@@ -805,6 +825,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 24,
     alignItems: "center",
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#A0A0A0",
   },
   submitButtonText: {
     fontSize: 18,

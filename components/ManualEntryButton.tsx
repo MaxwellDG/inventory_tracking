@@ -6,7 +6,7 @@ import { useApiError } from "@/hooks/use-api-error";
 import {
   useCreateItemMutation,
   useDeleteItemMutation,
-  useUpdateItemMutation,
+  useUpdateItemQuantityMutation,
 } from "@/redux/products/apiSlice";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { showError } = useApiError();
-  const [updateItem] = useUpdateItemMutation();
+  const [updateItemQuantity] = useUpdateItemQuantityMutation();
   const [createItem] = useCreateItemMutation();
   const [deleteItem] = useDeleteItemMutation();
 
@@ -91,9 +91,10 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
         if (isBuying) {
           const buyQuantity = quantityToSell || 1;
           if (existingItem) {
-            await updateItem({
-              ...existingItem,
-              quantity: existingItem.quantity + buyQuantity,
+            // Use the quantity endpoint to increment
+            await updateItemQuantity({
+              id: existingItem.id,
+              quantity: buyQuantity,
             }).unwrap();
           } else {
             const categoryId = category?.id;
@@ -116,9 +117,10 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
               if (existingItem.quantity === sellQuantity) {
                 await deleteItem(existingItem.id).unwrap();
               } else {
-                await updateItem({
-                  ...existingItem,
-                  quantity: existingItem.quantity - sellQuantity,
+                // Use the quantity endpoint to decrement (negative value)
+                await updateItemQuantity({
+                  id: existingItem.id,
+                  quantity: -sellQuantity,
                 }).unwrap();
               }
             } else {
