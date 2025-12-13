@@ -23,7 +23,7 @@
   "noItems": "No items in this order",
   "quantity": "Quantity",
   "receiptId": "Receipt ID",
-  "receiptIdTooltip": "Adding a Receipt ID will move Status to \"Completed\"",
+  "receiptIdTooltip": "Adding a Receipt ID will move Status to \"Completed\". Removing a Receipt ID will move Status to \"Pending Payment\"",
   "enterReceiptId": "Enter receipt ID",
   "save": "Save",
   "isDelivered": "Delivered",

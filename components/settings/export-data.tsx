@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useAppSelector } from "@/redux";
 import { useExportDataMutation } from "@/redux/export/apiSlice";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
@@ -8,6 +9,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -18,12 +20,15 @@ import {
 
 export default function ExportDataScreen() {
   const { t } = useTranslation();
+  const user = useAppSelector((state) => state.auth.user);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [email, setEmail] = useState("");
-  const [exportData, { isLoading }] = useExportDataMutation();
+  const [email, setEmail] = useState(user?.email || "");
+  const [exportData, { isLoading, error }] = useExportDataMutation();
+
+  console.log("Export Data Error:", error);
 
   const handleStartDatePress = () => {
     setShowStartDatePicker(true);
@@ -36,6 +41,12 @@ export default function ExportDataScreen() {
   const onStartDateChange = (event: any, selectedDate?: Date) => {
     setShowStartDatePicker(Platform.OS === "ios");
     if (selectedDate) {
+      // Only update if the selected date is not after the end date
+      if (endDate && selectedDate > endDate) {
+        // Don't update if start date is after end date
+        return;
+      }
+
       setStartDate(selectedDate);
     }
   };
@@ -43,6 +54,12 @@ export default function ExportDataScreen() {
   const onEndDateChange = (event: any, selectedDate?: Date) => {
     setShowEndDatePicker(Platform.OS === "ios");
     if (selectedDate) {
+      // Only update if the selected date is not before the start date
+      if (startDate && selectedDate < startDate) {
+        // Don't update if end date is before start date
+        return;
+      }
+
       setEndDate(selectedDate);
     }
   };
@@ -56,11 +73,17 @@ export default function ExportDataScreen() {
       Alert.alert(t("exportData.error"), t("exportData.enterEmail"));
       return;
     }
+    console.log("data", {
+      email: email.trim(),
+      type: "csv",
+      start_date: startDate.getTime(),
+      end_date: endDate.getTime(),
+    });
     await exportData({
       email: email.trim(),
       type: "csv",
-      startDate: startDate.getTime(),
-      endDate: endDate.getTime(),
+      start_date: startDate.getTime(),
+      end_date: endDate.getTime(),
     })
       .unwrap()
       .then(() => {
@@ -88,75 +111,92 @@ export default function ExportDataScreen() {
         </ThemedText>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <ThemedText style={styles.subheader}>{t("exportData.csv")}</ThemedText>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.infoCard}>
+            <ThemedText style={styles.infoText}>
+              Exporting will send Order data to the email address provided. Only
+              Orders with a status of{" "}
+              <ThemedText style={styles.boldText}>Completed</ThemedText> will be
+              exported.
+            </ThemedText>
+          </View>
 
-        <View style={styles.dateSection}>
-          <View style={styles.dateRow}>
-            <TouchableOpacity
-              style={styles.calendarIconButton}
-              onPress={handleStartDatePress}
-            >
-              <IconSymbol name="calendar" size={20} color="#007AFF" />
-            </TouchableOpacity>
-            <View style={styles.dateInfo}>
-              <ThemedText style={styles.dateLabel}>
-                {t("exportData.startDate")}
-              </ThemedText>
-              <ThemedText style={styles.dateValue}>
-                {startDate
-                  ? startDate.toLocaleDateString()
-                  : t("exportData.selectDate")}
-              </ThemedText>
+          <ThemedText style={styles.subheader}>
+            {t("exportData.csv")}
+          </ThemedText>
+
+          <View style={styles.dateSection}>
+            <View style={styles.dateRow}>
+              <TouchableOpacity
+                style={styles.calendarIconButton}
+                onPress={handleStartDatePress}
+              >
+                <IconSymbol name="calendar" size={20} color="#007AFF" />
+              </TouchableOpacity>
+              <View style={styles.dateInfo}>
+                <ThemedText style={styles.dateLabel}>
+                  {t("exportData.startDate")}
+                </ThemedText>
+                <ThemedText style={styles.dateValue}>
+                  {startDate
+                    ? startDate.toLocaleDateString()
+                    : t("exportData.selectDate")}
+                </ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.dateRow}>
+              <TouchableOpacity
+                style={styles.calendarIconButton}
+                onPress={handleEndDatePress}
+              >
+                <IconSymbol name="calendar" size={20} color="#007AFF" />
+              </TouchableOpacity>
+              <View style={styles.dateInfo}>
+                <ThemedText style={styles.dateLabel}>
+                  {t("exportData.endDate")}
+                </ThemedText>
+                <ThemedText style={styles.dateValue}>
+                  {endDate
+                    ? endDate.toLocaleDateString()
+                    : t("exportData.selectDate")}
+                </ThemedText>
+              </View>
             </View>
           </View>
 
-          <View style={styles.dateRow}>
-            <TouchableOpacity
-              style={styles.calendarIconButton}
-              onPress={handleEndDatePress}
-            >
-              <IconSymbol name="calendar" size={20} color="#007AFF" />
-            </TouchableOpacity>
-            <View style={styles.dateInfo}>
-              <ThemedText style={styles.dateLabel}>
-                {t("exportData.endDate")}
-              </ThemedText>
-              <ThemedText style={styles.dateValue}>
-                {endDate
-                  ? endDate.toLocaleDateString()
-                  : t("exportData.selectDate")}
-              </ThemedText>
-            </View>
+          <View style={styles.emailSection}>
+            <ThemedText style={styles.emailLabel}>
+              {t("exportData.emailAddress")}
+            </ThemedText>
+            <TextInput
+              style={styles.emailInput}
+              placeholder={t("exportData.emailPlaceholder")}
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           </View>
-        </View>
 
-        <View style={styles.emailSection}>
-          <ThemedText style={styles.emailLabel}>
-            {t("exportData.emailAddress")}
-          </ThemedText>
-          <TextInput
-            style={styles.emailInput}
-            placeholder={t("exportData.emailPlaceholder")}
-            placeholderTextColor="#999"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          <ThemedText style={styles.submitButtonText}>
-            {t("exportData.submit")}
-          </ThemedText>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={isLoading}
+          >
+            <ThemedText style={styles.submitButtonText}>
+              {t("exportData.submit")}
+            </ThemedText>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {showStartDatePicker && (
         <DateTimePicker
@@ -164,6 +204,11 @@ export default function ExportDataScreen() {
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={onStartDateChange}
+          maximumDate={
+            endDate
+              ? new Date(Math.min(endDate.getTime(), new Date().getTime()))
+              : new Date()
+          }
         />
       )}
 
@@ -173,6 +218,8 @@ export default function ExportDataScreen() {
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={onEndDateChange}
+          minimumDate={startDate || undefined}
+          maximumDate={new Date()}
         />
       )}
     </ThemedView>
@@ -199,9 +246,33 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   content: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  infoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: "#ADD8E6",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  infoText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#333",
+  },
+  boldText: {
+    fontWeight: "700",
   },
   subheader: {
     fontSize: 24,

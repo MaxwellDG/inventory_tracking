@@ -17,7 +17,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -157,274 +159,284 @@ export default function OrderDetailsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Is Delivered Card - Only show when receipt_id is null */}
-        <TouchableOpacity
-          style={styles.deliveryCard}
-          activeOpacity={isDeliveryDisabled ? 0.7 : 1}
-          onPress={handleDeliveryCardPress}
-        >
-          <View style={styles.deliveryLabelContainer}>
-            <ThemedText style={styles.deliveryLabel}>
-              {t("history.isDelivered")}
-            </ThemedText>
-            <Tooltip
-              content={t("history.isDeliveredTooltip")}
-              iconSize={16}
-              iconColor="#999"
-            />
-          </View>
-          <Switch
-            value={isDelivered}
-            onValueChange={handleDeliveryToggle}
-            trackColor={{ false: "#E5E5E5", true: "#34C759" }}
-            thumbColor="#FFFFFF"
-            ios_backgroundColor="#E5E5E5"
-            disabled={isDeliveryDisabled}
-          />
-        </TouchableOpacity>
-
-        {/* Receipt ID Section */}
-        <View style={styles.receiptSection}>
-          <View style={styles.receiptLabelContainer}>
-            <ThemedText style={styles.receiptLabel}>
-              {t("history.receiptId")}
-            </ThemedText>
-            <Tooltip
-              content={t("history.receiptIdTooltip")}
-              iconSize={16}
-              iconColor="#999"
-            />
-          </View>
-          <TextInput
-            style={styles.receiptInput}
-            value={receiptId}
-            onChangeText={setReceiptId}
-            placeholder={t("history.enterReceiptId")}
-            placeholderTextColor="#999"
-          />
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Is Delivered Card - Only show when receipt_id is null */}
           <TouchableOpacity
-            style={[
-              styles.saveButton,
-              (!isReceiptIdChanged || isUpdating) && styles.saveButtonDisabled,
-            ]}
-            onPress={handleSaveReceiptId}
-            disabled={!isReceiptIdChanged || isUpdating}
+            style={styles.deliveryCard}
+            activeOpacity={isDeliveryDisabled ? 0.7 : 1}
+            onPress={handleDeliveryCardPress}
           >
-            <ThemedText style={styles.saveButtonText}>
-              {t("history.save")}
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.summaryCard}>
-          <TouchableOpacity
-            style={[
-              styles.summaryRow,
-              { flexDirection: "column", alignItems: "flex-start" },
-            ]}
-            onPress={handleCopyUuid}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <ThemedText style={styles.summaryLabel}>
-                {t("history.orderId")}:
+            <View style={styles.deliveryLabelContainer}>
+              <ThemedText style={styles.deliveryLabel}>
+                {t("history.isDelivered")}
               </ThemedText>
-              <IconSymbol name="doc.on.doc" size={20} color="#007AFF" />
+              <Tooltip
+                content={t("history.isDeliveredTooltip")}
+                iconSize={16}
+                iconColor="#999"
+              />
             </View>
-            <ThemedText style={[styles.summaryValue, styles.orderIdValue]}>
-              {orderData.uuid}
-            </ThemedText>
+            <Switch
+              value={isDelivered}
+              onValueChange={handleDeliveryToggle}
+              trackColor={{ false: "#E5E5E5", true: "#34C759" }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#E5E5E5"
+              disabled={isDeliveryDisabled}
+            />
           </TouchableOpacity>
 
-          <View style={styles.summaryRow}>
-            <ThemedText style={styles.summaryLabel}>
-              {t("history.subtotal")}:
-            </ThemedText>
-            <ThemedText style={styles.summaryValue}>
-              ${orderData.subtotal}
-            </ThemedText>
-          </View>
-
-          {/* Fee rows */}
-          {fullOrder?.fees &&
-            fullOrder.fees.length > 0 &&
-            fullOrder.fees.map((fee: Fee) => {
-              return (
-                <View key={fee.id} style={styles.summaryRow}>
-                  <ThemedText style={styles.feeLabel}>{fee.name}</ThemedText>
-                  <ThemedText style={styles.feeValue}>${fee.value}</ThemedText>
-                </View>
-              );
-            })}
-
-          <View style={styles.summaryRow}>
-            <ThemedText style={styles.summaryLabel}>
-              {t("history.total")}:
-            </ThemedText>
-            <ThemedText style={[styles.summaryValue, styles.totalValue]}>
-              ${orderData.total}
-            </ThemedText>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <ThemedText style={styles.summaryLabel}>
-              {t("history.status")}:
-            </ThemedText>
-            <ThemedText
+          {/* Receipt ID Section */}
+          <View style={styles.receiptSection}>
+            <View style={styles.receiptLabelContainer}>
+              <ThemedText style={styles.receiptLabel}>
+                {t("history.receiptId")}
+              </ThemedText>
+              <Tooltip
+                content={t("history.receiptIdTooltip")}
+                iconSize={16}
+                iconColor="#999"
+              />
+            </View>
+            <TextInput
+              style={styles.receiptInput}
+              value={receiptId}
+              onChangeText={setReceiptId}
+              placeholder={t("history.enterReceiptId")}
+              placeholderTextColor="#999"
+            />
+            <TouchableOpacity
               style={[
-                styles.summaryValue,
-                styles.statusText,
-                fullOrder?.status === "completed" && styles.statusCompleted,
-                fullOrder?.status === "pending" && styles.statusPending,
-                fullOrder?.status === "open" && styles.statusOpen,
+                styles.saveButton,
+                (!isReceiptIdChanged || isUpdating) &&
+                  styles.saveButtonDisabled,
               ]}
+              onPress={handleSaveReceiptId}
+              disabled={!isReceiptIdChanged || isUpdating}
             >
-              {fullOrder?.status
-                ? t(`history.${fullOrder.status.toLowerCase()}`)
-                : t(`history.${orderData.status.toLowerCase()}`)}
-            </ThemedText>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <ThemedText style={styles.summaryLabel}>
-              {t("history.createdBy")}:
-            </ThemedText>
-            <ThemedText style={styles.summaryValue}>
-              {orderData.user.name}
-            </ThemedText>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <ThemedText style={styles.summaryLabel}>
-              {t("history.createdAt")}:
-            </ThemedText>
-            <ThemedText style={styles.summaryValue}>
-              {new Date(orderData.created_at).toLocaleDateString()} at{" "}
-              {new Date(orderData.created_at).toLocaleTimeString()}
-            </ThemedText>
-          </View>
-        </View>
-
-        <View style={styles.itemsSection}>
-          <ThemedText style={styles.itemsTitle}>
-            {t("history.items")}
-          </ThemedText>
-
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#007AFF" />
-              <ThemedText style={styles.loadingText}>
-                {t("history.loadingItems")}
+              <ThemedText style={styles.saveButtonText}>
+                {t("history.save")}
               </ThemedText>
-            </View>
-          ) : error ? (
-            <View style={styles.errorContainer}>
-              <ThemedText style={styles.errorText}>
-                {t("history.errorLoadingItems")}
-              </ThemedText>
-            </View>
-          ) : fullOrder?.items && fullOrder.items.length > 0 ? (
-            fullOrder.items.map((item, index) => (
-              <View key={index} style={styles.itemCard}>
-                <View style={styles.itemHeader}>
-                  <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                  {item.price && (
-                    <ThemedText style={styles.itemPrice}>
-                      ${item.price}
-                    </ThemedText>
-                  )}
-                </View>
-                <View style={styles.itemDetails}>
-                  <ThemedText style={styles.itemQuantity}>
-                    {t("history.quantity")}: {item.quantity} {item.type_of_unit}
-                  </ThemedText>
-                </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.summaryCard}>
+            <TouchableOpacity
+              style={[
+                styles.summaryRow,
+                { flexDirection: "column", alignItems: "flex-start" },
+              ]}
+              onPress={handleCopyUuid}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
+              >
+                <ThemedText style={styles.summaryLabel}>
+                  {t("history.orderId")}:
+                </ThemedText>
+                <IconSymbol name="doc.on.doc" size={20} color="#007AFF" />
               </View>
-            ))
-          ) : (
-            <View style={styles.emptyContainer}>
-              <ThemedText style={styles.emptyText}>
-                {t("history.noItems")}
+              <ThemedText style={[styles.summaryValue, styles.orderIdValue]}>
+                {orderData.uuid}
+              </ThemedText>
+            </TouchableOpacity>
+
+            <View style={styles.summaryRow}>
+              <ThemedText style={styles.summaryLabel}>
+                {t("history.subtotal")}:
+              </ThemedText>
+              <ThemedText style={styles.summaryValue}>
+                ${orderData.subtotal}
               </ThemedText>
             </View>
-          )}
-        </View>
 
-        {/* Delete Button */}
-        <TouchableOpacity
-          style={styles.deleteSection}
-          onPress={() => setShowDeleteModal(true)}
-        >
-          <ThemedText style={styles.deleteText}>
-            {t("history.delete")}
-          </ThemedText>
-        </TouchableOpacity>
+            {/* Fee rows */}
+            {fullOrder?.fees &&
+              fullOrder.fees.length > 0 &&
+              fullOrder.fees.map((fee: Fee) => {
+                return (
+                  <View key={fee.id} style={styles.summaryRow}>
+                    <ThemedText style={styles.feeLabel}>{fee.name}</ThemedText>
+                    <ThemedText style={styles.feeValue}>
+                      ${fee.value}
+                    </ThemedText>
+                  </View>
+                );
+              })}
 
-        {/* Delete Confirmation Modal */}
-        <Modal
-          visible={showDeleteModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={handleCancelDelete}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <ThemedText style={styles.modalTitle}>
-                {t("history.deleteOrder")}
+            <View style={styles.summaryRow}>
+              <ThemedText style={styles.summaryLabel}>
+                {t("history.total")}:
               </ThemedText>
-              <ThemedText style={styles.modalMessage}>
-                {t("history.deleteOrderConfirm")}
+              <ThemedText style={[styles.summaryValue, styles.totalValue]}>
+                ${orderData.total}
               </ThemedText>
+            </View>
 
-              <View style={styles.checkboxContainer}>
-                <Switch
-                  value={restoreInventory}
-                  onValueChange={setRestoreInventory}
-                  trackColor={{ false: "#E5E5E5", true: "#34C759" }}
-                  thumbColor="#FFFFFF"
-                  ios_backgroundColor="#E5E5E5"
-                />
-                <ThemedText style={styles.checkboxLabel}>
-                  {t("history.restoreInventory")}
+            <View style={styles.summaryRow}>
+              <ThemedText style={styles.summaryLabel}>
+                {t("history.status")}:
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.summaryValue,
+                  styles.statusText,
+                  fullOrder?.status === "completed" && styles.statusCompleted,
+                  fullOrder?.status === "pending" && styles.statusPending,
+                  fullOrder?.status === "open" && styles.statusOpen,
+                ]}
+              >
+                {fullOrder?.status
+                  ? t(`history.${fullOrder.status.toLowerCase()}`)
+                  : t(`history.${orderData.status.toLowerCase()}`)}
+              </ThemedText>
+            </View>
+
+            <View style={styles.summaryRow}>
+              <ThemedText style={styles.summaryLabel}>
+                {t("history.createdBy")}:
+              </ThemedText>
+              <ThemedText style={styles.summaryValue}>
+                {orderData.user.name}
+              </ThemedText>
+            </View>
+
+            <View style={styles.summaryRow}>
+              <ThemedText style={styles.summaryLabel}>
+                {t("history.createdAt")}:
+              </ThemedText>
+              <ThemedText style={styles.summaryValue}>
+                {new Date(orderData.created_at).toLocaleDateString()} at{" "}
+                {new Date(orderData.created_at).toLocaleTimeString()}
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.itemsSection}>
+            <ThemedText style={styles.itemsTitle}>
+              {t("history.items")}
+            </ThemedText>
+
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <ThemedText style={styles.loadingText}>
+                  {t("history.loadingItems")}
                 </ThemedText>
               </View>
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={handleCancelDelete}
-                  disabled={isDeleting}
-                >
-                  <ThemedText style={styles.cancelButtonText}>
-                    {t("history.cancel")}
-                  </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.deleteButton]}
-                  onPress={handleConfirmDelete}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <ThemedText style={styles.deleteButtonText}>
-                      {t("history.delete")}
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <ThemedText style={styles.errorText}>
+                  {t("history.errorLoadingItems")}
+                </ThemedText>
+              </View>
+            ) : fullOrder?.items && fullOrder.items.length > 0 ? (
+              fullOrder.items.map((item, index) => (
+                <View key={index} style={styles.itemCard}>
+                  <View style={styles.itemHeader}>
+                    <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+                    {item.price && (
+                      <ThemedText style={styles.itemPrice}>
+                        ${item.price}
+                      </ThemedText>
+                    )}
+                  </View>
+                  <View style={styles.itemDetails}>
+                    <ThemedText style={styles.itemQuantity}>
+                      {t("history.quantity")}: {item.quantity}{" "}
+                      {item.type_of_unit}
                     </ThemedText>
-                  )}
-                </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>
+                  {t("history.noItems")}
+                </ThemedText>
+              </View>
+            )}
+          </View>
+
+          {/* Delete Button */}
+          <TouchableOpacity
+            style={styles.deleteSection}
+            onPress={() => setShowDeleteModal(true)}
+          >
+            <ThemedText style={styles.deleteText}>
+              {t("history.delete")}
+            </ThemedText>
+          </TouchableOpacity>
+
+          {/* Delete Confirmation Modal */}
+          <Modal
+            visible={showDeleteModal}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={handleCancelDelete}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <ThemedText style={styles.modalTitle}>
+                  {t("history.deleteOrder")}
+                </ThemedText>
+                <ThemedText style={styles.modalMessage}>
+                  {t("history.deleteOrderConfirm")}
+                </ThemedText>
+
+                <View style={styles.checkboxContainer}>
+                  <Switch
+                    value={restoreInventory}
+                    onValueChange={setRestoreInventory}
+                    trackColor={{ false: "#E5E5E5", true: "#34C759" }}
+                    thumbColor="#FFFFFF"
+                    ios_backgroundColor="#E5E5E5"
+                  />
+                  <ThemedText style={styles.checkboxLabel}>
+                    {t("history.restoreInventory")}
+                  </ThemedText>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={handleCancelDelete}
+                    disabled={isDeleting}
+                  >
+                    <ThemedText style={styles.cancelButtonText}>
+                      {t("history.cancel")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.deleteButton]}
+                    onPress={handleConfirmDelete}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <ThemedText style={styles.deleteButtonText}>
+                        {t("history.delete")}
+                      </ThemedText>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
-      </ScrollView>
+          </Modal>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ThemedView>
   );
 }
@@ -448,6 +460,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   content: {
     flex: 1,

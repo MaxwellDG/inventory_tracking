@@ -1,6 +1,6 @@
 export type ExportDataPayload = {
   email: string;
   type: "csv";
-  startDate: number;
-  endDate: number;
+  start_date: number;
+  end_date: number;
 };

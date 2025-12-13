@@ -17,6 +17,8 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -62,7 +64,8 @@ export default function UpdateScreen() {
 
   // Delete item dropdown state
   const [showDeleteItem, setShowDeleteItem] = useState(false);
-  const [selectedDeleteItemCategory, setSelectedDeleteItemCategory] = useState("");
+  const [selectedDeleteItemCategory, setSelectedDeleteItemCategory] =
+    useState("");
   const [deleteItemName, setDeleteItemName] = useState("");
 
   // Edit item dropdown state
@@ -302,526 +305,268 @@ export default function UpdateScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 20}
       >
-        <View style={styles.editContainer}>
-          {/* Category Section */}
-          <View style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionHeaderText}>
-              {t("inventoryEdit.categorySection")}
-            </ThemedText>
-          </View>
-
-          {/* Add Category Dropdown */}
-          <ThemedView style={styles.dropdownSection}>
-            <TouchableOpacity
-              style={styles.dropdownHeader}
-              onPress={() => setShowAddCategory(!showAddCategory)}
-            >
-              <ThemedText style={styles.dropdownTitle}>
-                {t("inventoryEdit.addNewCategory")}
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.editContainer}>
+            {/* Category Section */}
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionHeaderText}>
+                {t("inventoryEdit.categorySection")}
               </ThemedText>
-              <IconSymbol
-                name={showAddCategory ? "chevron.up" : "chevron.down"}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
+            </View>
 
-            {showAddCategory && (
-              <View style={styles.dropdownContent}>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t("inventoryEdit.categoryNamePlaceholder")}
-                  placeholderTextColor="#999"
-                  value={newCategoryName}
-                  onChangeText={setNewCategoryName}
-                  autoCapitalize="words"
+            {/* Add Category Dropdown */}
+            <ThemedView style={styles.dropdownSection}>
+              <TouchableOpacity
+                style={styles.dropdownHeader}
+                onPress={() => setShowAddCategory(!showAddCategory)}
+              >
+                <ThemedText style={styles.dropdownTitle}>
+                  {t("inventoryEdit.addNewCategory")}
+                </ThemedText>
+                <IconSymbol
+                  name={showAddCategory ? "chevron.up" : "chevron.down"}
+                  size={20}
+                  color="#666"
                 />
-                <TouchableOpacity
-                  style={[
-                    styles.addButton,
-                    !newCategoryName.trim() && styles.addButtonDisabled,
-                  ]}
-                  onPress={handleAddCategory}
-                  disabled={!newCategoryName.trim()}
-                >
-                  <IconSymbol name="plus" size={16} color="white" />
-                  <ThemedText style={styles.addButtonText}>
-                    {t("inventoryEdit.addCategory")}
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ThemedView>
+              </TouchableOpacity>
 
-          {/* Edit Category Dropdown */}
-          <ThemedView style={styles.dropdownSection}>
-            <TouchableOpacity
-              style={styles.dropdownHeader}
-              onPress={() => {
-                if (showEditCategory) {
-                  setSelectedEditCategory("");
-                  setEditCategoryName("");
-                }
-                setShowEditCategory(!showEditCategory);
-              }}
-            >
-              <ThemedText style={styles.dropdownTitle}>
-                {t("inventoryEdit.editCategory")}
-              </ThemedText>
-              <IconSymbol
-                name={showEditCategory ? "chevron.up" : "chevron.down"}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
-
-            {showEditCategory && (
-              <View style={styles.dropdownContent}>
-                <View style={styles.categorySelector}>
-                  <ThemedText style={styles.selectorLabel}>
-                    {t("inventoryEdit.selectCategoryToEdit")}
-                  </ThemedText>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoryScroll}
+              {showAddCategory && (
+                <View style={styles.dropdownContent}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t("inventoryEdit.categoryNamePlaceholder")}
+                    placeholderTextColor="#999"
+                    value={newCategoryName}
+                    onChangeText={setNewCategoryName}
+                    autoCapitalize="words"
+                  />
+                  <TouchableOpacity
+                    style={[
+                      styles.addButton,
+                      !newCategoryName.trim() && styles.addButtonDisabled,
+                    ]}
+                    onPress={handleAddCategory}
+                    disabled={!newCategoryName.trim()}
                   >
-                    {inventoryData.map((category) => (
-                      <TouchableOpacity
-                        key={category.id}
-                        style={[
-                          styles.categoryOption,
-                          selectedEditCategory === category.name &&
-                            styles.categoryOptionSelected,
-                        ]}
-                        onPress={() => setSelectedEditCategory(category.name)}
-                      >
-                        <ThemedText
+                    <IconSymbol name="plus" size={16} color="white" />
+                    <ThemedText style={styles.addButtonText}>
+                      {t("inventoryEdit.addCategory")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ThemedView>
+
+            {/* Edit Category Dropdown */}
+            <ThemedView style={styles.dropdownSection}>
+              <TouchableOpacity
+                style={styles.dropdownHeader}
+                onPress={() => {
+                  if (showEditCategory) {
+                    setSelectedEditCategory("");
+                    setEditCategoryName("");
+                  }
+                  setShowEditCategory(!showEditCategory);
+                }}
+              >
+                <ThemedText style={styles.dropdownTitle}>
+                  {t("inventoryEdit.editCategory")}
+                </ThemedText>
+                <IconSymbol
+                  name={showEditCategory ? "chevron.up" : "chevron.down"}
+                  size={20}
+                  color="#666"
+                />
+              </TouchableOpacity>
+
+              {showEditCategory && (
+                <View style={styles.dropdownContent}>
+                  <View style={styles.categorySelector}>
+                    <ThemedText style={styles.selectorLabel}>
+                      {t("inventoryEdit.selectCategoryToEdit")}
+                    </ThemedText>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.categoryScroll}
+                    >
+                      {inventoryData.map((category) => (
+                        <TouchableOpacity
+                          key={category.id}
                           style={[
-                            styles.categoryOptionText,
+                            styles.categoryOption,
                             selectedEditCategory === category.name &&
-                              styles.categoryOptionTextSelected,
+                              styles.categoryOptionSelected,
                           ]}
+                          onPress={() => setSelectedEditCategory(category.name)}
                         >
-                          {category.name}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                          <ThemedText
+                            style={[
+                              styles.categoryOptionText,
+                              selectedEditCategory === category.name &&
+                                styles.categoryOptionTextSelected,
+                            ]}
+                          >
+                            {category.name}
+                          </ThemedText>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t("inventoryEdit.enterNewCategoryName")}
+                    placeholderTextColor="#999"
+                    value={editCategoryName}
+                    onChangeText={setEditCategoryName}
+                    autoCapitalize="words"
+                  />
+
+                  <TouchableOpacity
+                    style={[
+                      styles.addButton,
+                      (!selectedEditCategory || !editCategoryName.trim()) &&
+                        styles.addButtonDisabled,
+                    ]}
+                    onPress={handleEditCategory}
+                    disabled={!selectedEditCategory || !editCategoryName.trim()}
+                  >
+                    <ThemedText style={styles.addButtonText}>
+                      {t("inventoryEdit.updateCategory")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ThemedView>
+
+            {/* Delete Category Dropdown */}
+            <ThemedView style={styles.dropdownSection}>
+              <TouchableOpacity
+                style={styles.dropdownHeader}
+                onPress={() => setShowDeleteCategory(!showDeleteCategory)}
+              >
+                <ThemedText style={styles.dropdownTitle}>
+                  {t("inventoryEdit.deleteCategory")}
+                </ThemedText>
+                <IconSymbol
+                  name={showDeleteCategory ? "chevron.up" : "chevron.down"}
+                  size={20}
+                  color="#666"
+                />
+              </TouchableOpacity>
+
+              {showDeleteCategory && (
+                <View style={styles.dropdownContent}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t("inventoryEdit.enterExactCategoryName")}
+                    placeholderTextColor="#999"
+                    value={deleteCategoryName}
+                    onChangeText={setDeleteCategoryName}
+                    autoCapitalize="words"
+                  />
+
+                  <TouchableOpacity
+                    style={[
+                      styles.deleteButton,
+                      !deleteCategoryName.trim() && styles.deleteButtonDisabled,
+                    ]}
+                    onPress={handleDeleteCategory}
+                    disabled={!deleteCategoryName.trim()}
+                  >
+                    <IconSymbol name="trash" size={16} color="white" />
+                    <ThemedText style={styles.deleteButtonText}>
+                      {t("inventoryEdit.deleteCategory")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ThemedView>
+
+            {/* Item Section - Only show if at least one category exists */}
+            {inventoryData.length > 0 && (
+              <>
+                <View style={styles.sectionHeader}>
+                  <ThemedText style={styles.sectionHeaderText}>
+                    {t("inventoryEdit.itemSection")}
+                  </ThemedText>
                 </View>
 
-                <TextInput
-                  style={styles.input}
-                  placeholder={t("inventoryEdit.enterNewCategoryName")}
-                  placeholderTextColor="#999"
-                  value={editCategoryName}
-                  onChangeText={setEditCategoryName}
-                  autoCapitalize="words"
-                />
-
-                <TouchableOpacity
-                  style={[
-                    styles.addButton,
-                    (!selectedEditCategory || !editCategoryName.trim()) &&
-                      styles.addButtonDisabled,
-                  ]}
-                  onPress={handleEditCategory}
-                  disabled={!selectedEditCategory || !editCategoryName.trim()}
-                >
-                  <ThemedText style={styles.addButtonText}>
-                    {t("inventoryEdit.updateCategory")}
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ThemedView>
-
-          {/* Delete Category Dropdown */}
-          <ThemedView style={styles.dropdownSection}>
-            <TouchableOpacity
-              style={styles.dropdownHeader}
-              onPress={() => setShowDeleteCategory(!showDeleteCategory)}
-            >
-              <ThemedText style={styles.dropdownTitle}>
-                {t("inventoryEdit.deleteCategory")}
-              </ThemedText>
-              <IconSymbol
-                name={showDeleteCategory ? "chevron.up" : "chevron.down"}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
-
-            {showDeleteCategory && (
-              <View style={styles.dropdownContent}>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t("inventoryEdit.enterExactCategoryName")}
-                  placeholderTextColor="#999"
-                  value={deleteCategoryName}
-                  onChangeText={setDeleteCategoryName}
-                  autoCapitalize="words"
-                />
-
-                <TouchableOpacity
-                  style={[
-                    styles.deleteButton,
-                    !deleteCategoryName.trim() && styles.deleteButtonDisabled,
-                  ]}
-                  onPress={handleDeleteCategory}
-                  disabled={!deleteCategoryName.trim()}
-                >
-                  <IconSymbol name="trash" size={16} color="white" />
-                  <ThemedText style={styles.deleteButtonText}>
-                    {t("inventoryEdit.deleteCategory")}
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ThemedView>
-
-          {/* Item Section - Only show if at least one category exists */}
-          {inventoryData.length > 0 && (
-            <>
-              <View style={styles.sectionHeader}>
-                <ThemedText style={styles.sectionHeaderText}>
-                  {t("inventoryEdit.itemSection")}
-                </ThemedText>
-              </View>
-
-              {/* Add Item Dropdown */}
-              <ThemedView style={styles.dropdownSection}>
-                <TouchableOpacity
-                  style={styles.dropdownHeader}
-                  onPress={() => {
-                    if (showAddItem) {
-                      setNewItemName("");
-                      setNewItemQuantity("");
-                      setNewItemUnit("");
-                      setNewItemPrice("");
-                      setSelectedCategory("");
-                    }
-                    setShowAddItem(!showAddItem);
-                  }}
-                >
-                  <ThemedText style={styles.dropdownTitle}>
-                    {t("inventoryEdit.addNewItem")}
-                  </ThemedText>
-                  <IconSymbol
-                    name={showAddItem ? "chevron.up" : "chevron.down"}
-                    size={20}
-                    color="#666"
-                  />
-                </TouchableOpacity>
-
-                {showAddItem && (
-                  <View style={styles.dropdownContent}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder={t("inventoryEdit.itemNamePlaceholder")}
-                      placeholderTextColor="#999"
-                      value={newItemName}
-                      onChangeText={setNewItemName}
-                      autoCapitalize="words"
+                {/* Add Item Dropdown */}
+                <ThemedView style={styles.dropdownSection}>
+                  <TouchableOpacity
+                    style={styles.dropdownHeader}
+                    onPress={() => {
+                      if (showAddItem) {
+                        setNewItemName("");
+                        setNewItemQuantity("");
+                        setNewItemUnit("");
+                        setNewItemPrice("");
+                        setSelectedCategory("");
+                      }
+                      setShowAddItem(!showAddItem);
+                    }}
+                  >
+                    <ThemedText style={styles.dropdownTitle}>
+                      {t("inventoryEdit.addNewItem")}
+                    </ThemedText>
+                    <IconSymbol
+                      name={showAddItem ? "chevron.up" : "chevron.down"}
+                      size={20}
+                      color="#666"
                     />
+                  </TouchableOpacity>
 
-                    <View style={styles.inputRow}>
+                  {showAddItem && (
+                    <View style={styles.dropdownContent}>
                       <TextInput
-                        style={[styles.input, styles.inputHalf]}
-                        placeholder={t("inventoryEdit.quantityPlaceholder")}
+                        style={styles.input}
+                        placeholder={t("inventoryEdit.itemNamePlaceholder")}
                         placeholderTextColor="#999"
-                        value={newItemQuantity}
-                        onChangeText={setNewItemQuantity}
-                        keyboardType="numeric"
-                      />
-                      <TextInput
-                        style={[styles.input, styles.inputHalf]}
-                        placeholder={t("inventoryEdit.unitPlaceholder")}
-                        placeholderTextColor="#999"
-                        value={newItemUnit}
-                        onChangeText={setNewItemUnit}
+                        value={newItemName}
+                        onChangeText={setNewItemName}
                         autoCapitalize="words"
                       />
-                    </View>
 
-                    <TextInput
-                      style={styles.input}
-                      placeholder={t("inventoryEdit.pricePlaceholder")}
-                      placeholderTextColor="#999"
-                      value={newItemPrice}
-                      onChangeText={setNewItemPrice}
-                      keyboardType="numeric"
-                    />
-
-                    {/* Category Selection */}
-                    <View style={styles.categorySelector}>
-                      <ThemedText style={styles.selectorLabel}>
-                        {t("inventoryEdit.selectCategory")}
-                      </ThemedText>
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.categoryScroll}
-                      >
-                        {inventoryData.map((category) => (
-                          <TouchableOpacity
-                            key={category.id}
-                            style={[
-                              styles.categoryOption,
-                              selectedCategory === category.name &&
-                                styles.categoryOptionSelected,
-                            ]}
-                            onPress={() => setSelectedCategory(category.name)}
-                          >
-                            <ThemedText
-                              style={[
-                                styles.categoryOptionText,
-                                selectedCategory === category.name &&
-                                  styles.categoryOptionTextSelected,
-                              ]}
-                            >
-                              {category.name}
-                            </ThemedText>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-
-                    <TouchableOpacity
-                      style={[
-                        styles.addButton,
-                        (!newItemName.trim() ||
-                          !newItemQuantity.trim() ||
-                          !newItemUnit.trim() ||
-                          !selectedCategory) &&
-                          styles.addButtonDisabled,
-                      ]}
-                      onPress={handleAddItem}
-                      disabled={
-                        !newItemName.trim() ||
-                        !newItemQuantity.trim() ||
-                        !newItemUnit.trim() ||
-                        !selectedCategory
-                      }
-                    >
-                      <IconSymbol name="plus" size={16} color="white" />
-                      <ThemedText style={styles.addButtonText}>
-                        {t("inventoryEdit.addItem")}
-                      </ThemedText>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </ThemedView>
-
-              {/* Edit Item Dropdown */}
-              <ThemedView style={styles.dropdownSection}>
-                <TouchableOpacity
-                  style={styles.dropdownHeader}
-                  onPress={() => {
-                    if (showEditItem) {
-                      setSelectedEditItemCategory("");
-                      setSelectedEditItem("");
-                      setEditItemName("");
-                      setEditItemPrice("");
-                    }
-                    setShowEditItem(!showEditItem);
-                  }}
-                >
-                  <ThemedText style={styles.dropdownTitle}>
-                    {t("inventoryEdit.editItem")}
-                  </ThemedText>
-                  <IconSymbol
-                    name={showEditItem ? "chevron.up" : "chevron.down"}
-                    size={20}
-                    color="#666"
-                  />
-                </TouchableOpacity>
-
-                {showEditItem && (
-                  <View style={styles.dropdownContent}>
-                    {/* Breadcrumb - shown when category or item is selected */}
-                    {selectedEditItemCategory && (
-                      <View style={styles.breadcrumbContainer}>
-                        <Breadcrumb
-                          items={[
-                            {
-                              label: selectedEditItemCategory,
-                              onPress: () => {
-                                setSelectedEditItemCategory("");
-                                setSelectedEditItem("");
-                                setEditItemName("");
-                                setEditItemPrice("");
-                              },
-                              showCloseIcon: true,
-                            },
-                            ...(selectedEditItem
-                              ? [
-                                  {
-                                    label: selectedEditItem,
-                                    onPress: () => {
-                                      setSelectedEditItem("");
-                                      setEditItemName("");
-                                      setEditItemPrice("");
-                                    },
-                                    showCloseIcon: true,
-                                  },
-                                ]
-                              : []),
-                          ]}
-                        />
-                      </View>
-                    )}
-
-                    {/* Step 1: Select Category - hidden when category is selected */}
-                    {!selectedEditItemCategory && (
-                      <View style={styles.categorySelector}>
-                        <ThemedText style={styles.selectorLabel}>
-                          {t("inventoryEdit.selectCategory")}
-                        </ThemedText>
-                        <ScrollView
-                          horizontal
-                          showsHorizontalScrollIndicator={false}
-                          style={styles.categoryScroll}
-                        >
-                          {inventoryData.map((category) => (
-                            <TouchableOpacity
-                              key={category.id}
-                              style={styles.categoryOption}
-                              onPress={() => {
-                                setSelectedEditItemCategory(category.name);
-                                setSelectedEditItem("");
-                                setEditItemName("");
-                                setEditItemPrice("");
-                              }}
-                            >
-                              <ThemedText style={styles.categoryOptionText}>
-                                {category.name}
-                              </ThemedText>
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </View>
-                    )}
-
-                    {/* Step 2: Select Item - shown when category is selected but item is not */}
-                    {selectedEditItemCategory && !selectedEditItem && (
-                      <View style={styles.itemSelector}>
-                        <ThemedText style={styles.selectorLabel}>
-                          {t("inventoryEdit.selectItemToEdit")}
-                        </ThemedText>
-                        <ScrollView
-                          horizontal
-                          showsHorizontalScrollIndicator={false}
-                          style={styles.itemScroll}
-                        >
-                          {editCategoryItems.map((item) => (
-                            <TouchableOpacity
-                              key={item.id}
-                              style={styles.itemOption}
-                              onPress={() => {
-                                setSelectedEditItem(item.name);
-                                setEditItemName(item.name);
-                                setEditItemPrice(item.price?.toString() || "");
-                              }}
-                            >
-                              <ThemedText style={styles.itemOptionText}>
-                                {item.name}
-                              </ThemedText>
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </View>
-                    )}
-
-                    {/* Step 3: Enter New Name - shown when item is selected */}
-                    {selectedEditItem && (
-                      <>
+                      <View style={styles.inputRow}>
                         <TextInput
-                          style={styles.input}
-                          placeholder={t("inventoryEdit.enterNewItemName")}
+                          style={[styles.input, styles.inputHalf]}
+                          placeholder={t("inventoryEdit.quantityPlaceholder")}
                           placeholderTextColor="#999"
-                          value={editItemName}
-                          onChangeText={setEditItemName}
-                          autoCapitalize="words"
-                        />
-
-                        {/* Step 4: Enter New Price */}
-                        <TextInput
-                          style={styles.input}
-                          placeholder={t("inventoryEdit.enterNewPrice")}
-                          placeholderTextColor="#999"
-                          value={editItemPrice}
-                          onChangeText={setEditItemPrice}
+                          value={newItemQuantity}
+                          onChangeText={setNewItemQuantity}
                           keyboardType="numeric"
                         />
-
-                        <TouchableOpacity
-                          style={[
-                            styles.addButton,
-                            !editItemName.trim() && styles.addButtonDisabled,
-                          ]}
-                          onPress={handleEditItem}
-                          disabled={!editItemName.trim()}
-                        >
-                          <ThemedText style={styles.addButtonText}>
-                            {t("inventoryEdit.updateItem")}
-                          </ThemedText>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-                )}
-              </ThemedView>
-
-              {/* Delete Item Dropdown */}
-              <ThemedView style={styles.dropdownSection}>
-                <TouchableOpacity
-                  style={styles.dropdownHeader}
-                  onPress={() => {
-                    if (showDeleteItem) {
-                      setSelectedDeleteItemCategory("");
-                      setDeleteItemName("");
-                    }
-                    setShowDeleteItem(!showDeleteItem);
-                  }}
-                >
-                  <ThemedText style={styles.dropdownTitle}>
-                    {t("inventoryEdit.deleteItem")}
-                  </ThemedText>
-                  <IconSymbol
-                    name={showDeleteItem ? "chevron.up" : "chevron.down"}
-                    size={20}
-                    color="#666"
-                  />
-                </TouchableOpacity>
-
-                {showDeleteItem && (
-                  <View style={styles.dropdownContent}>
-                    {/* Breadcrumb - shown when category is selected */}
-                    {selectedDeleteItemCategory && (
-                      <View style={styles.breadcrumbContainer}>
-                        <Breadcrumb
-                          items={[
-                            {
-                              label: selectedDeleteItemCategory,
-                              onPress: () => {
-                                setSelectedDeleteItemCategory("");
-                                setDeleteItemName("");
-                              },
-                              showCloseIcon: true,
-                            },
-                          ]}
+                        <TextInput
+                          style={[styles.input, styles.inputHalf]}
+                          placeholder={t("inventoryEdit.unitPlaceholder")}
+                          placeholderTextColor="#999"
+                          value={newItemUnit}
+                          onChangeText={setNewItemUnit}
+                          autoCapitalize="words"
                         />
                       </View>
-                    )}
 
-                    {/* Category Selection - hidden when category is selected */}
-                    {!selectedDeleteItemCategory && (
+                      <TextInput
+                        style={styles.input}
+                        placeholder={t("inventoryEdit.pricePlaceholder")}
+                        placeholderTextColor="#999"
+                        value={newItemPrice}
+                        onChangeText={setNewItemPrice}
+                        keyboardType="numeric"
+                      />
+
+                      {/* Category Selection */}
                       <View style={styles.categorySelector}>
                         <ThemedText style={styles.selectorLabel}>
                           {t("inventoryEdit.selectCategory")}
@@ -834,55 +579,322 @@ export default function UpdateScreen() {
                           {inventoryData.map((category) => (
                             <TouchableOpacity
                               key={category.id}
-                              style={styles.categoryOption}
-                              onPress={() => {
-                                setSelectedDeleteItemCategory(category.name);
-                                setDeleteItemName("");
-                              }}
+                              style={[
+                                styles.categoryOption,
+                                selectedCategory === category.name &&
+                                  styles.categoryOptionSelected,
+                              ]}
+                              onPress={() => setSelectedCategory(category.name)}
                             >
-                              <ThemedText style={styles.categoryOptionText}>
+                              <ThemedText
+                                style={[
+                                  styles.categoryOptionText,
+                                  selectedCategory === category.name &&
+                                    styles.categoryOptionTextSelected,
+                                ]}
+                              >
                                 {category.name}
                               </ThemedText>
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
                       </View>
-                    )}
 
-                    {/* Item name input - shown when category is selected */}
-                    {selectedDeleteItemCategory && (
-                      <>
-                        <TextInput
-                          style={styles.input}
-                          placeholder={t("inventoryEdit.enterExactItemName")}
-                          placeholderTextColor="#999"
-                          value={deleteItemName}
-                          onChangeText={setDeleteItemName}
-                          autoCapitalize="words"
-                        />
+                      <TouchableOpacity
+                        style={[
+                          styles.addButton,
+                          (!newItemName.trim() ||
+                            !newItemQuantity.trim() ||
+                            !newItemUnit.trim() ||
+                            !selectedCategory) &&
+                            styles.addButtonDisabled,
+                        ]}
+                        onPress={handleAddItem}
+                        disabled={
+                          !newItemName.trim() ||
+                          !newItemQuantity.trim() ||
+                          !newItemUnit.trim() ||
+                          !selectedCategory
+                        }
+                      >
+                        <IconSymbol name="plus" size={16} color="white" />
+                        <ThemedText style={styles.addButtonText}>
+                          {t("inventoryEdit.addItem")}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </ThemedView>
 
-                        <TouchableOpacity
-                          style={[
-                            styles.deleteButton,
-                            !deleteItemName.trim() && styles.deleteButtonDisabled,
-                          ]}
-                          onPress={handleDeleteItem}
-                          disabled={!deleteItemName.trim()}
-                        >
-                          <IconSymbol name="trash" size={16} color="white" />
-                          <ThemedText style={styles.deleteButtonText}>
-                            {t("inventoryEdit.deleteItem")}
+                {/* Edit Item Dropdown */}
+                <ThemedView style={styles.dropdownSection}>
+                  <TouchableOpacity
+                    style={styles.dropdownHeader}
+                    onPress={() => {
+                      if (showEditItem) {
+                        setSelectedEditItemCategory("");
+                        setSelectedEditItem("");
+                        setEditItemName("");
+                        setEditItemPrice("");
+                      }
+                      setShowEditItem(!showEditItem);
+                    }}
+                  >
+                    <ThemedText style={styles.dropdownTitle}>
+                      {t("inventoryEdit.editItem")}
+                    </ThemedText>
+                    <IconSymbol
+                      name={showEditItem ? "chevron.up" : "chevron.down"}
+                      size={20}
+                      color="#666"
+                    />
+                  </TouchableOpacity>
+
+                  {showEditItem && (
+                    <View style={styles.dropdownContent}>
+                      {/* Breadcrumb - shown when category or item is selected */}
+                      {selectedEditItemCategory && (
+                        <View style={styles.breadcrumbContainer}>
+                          <Breadcrumb
+                            items={[
+                              {
+                                label: selectedEditItemCategory,
+                                onPress: () => {
+                                  setSelectedEditItemCategory("");
+                                  setSelectedEditItem("");
+                                  setEditItemName("");
+                                  setEditItemPrice("");
+                                },
+                                showCloseIcon: true,
+                              },
+                              ...(selectedEditItem
+                                ? [
+                                    {
+                                      label: selectedEditItem,
+                                      onPress: () => {
+                                        setSelectedEditItem("");
+                                        setEditItemName("");
+                                        setEditItemPrice("");
+                                      },
+                                      showCloseIcon: true,
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </View>
+                      )}
+
+                      {/* Step 1: Select Category - hidden when category is selected */}
+                      {!selectedEditItemCategory && (
+                        <View style={styles.categorySelector}>
+                          <ThemedText style={styles.selectorLabel}>
+                            {t("inventoryEdit.selectCategory")}
                           </ThemedText>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-                )}
-              </ThemedView>
-            </>
-          )}
-        </View>
-      </ScrollView>
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.categoryScroll}
+                          >
+                            {inventoryData.map((category) => (
+                              <TouchableOpacity
+                                key={category.id}
+                                style={styles.categoryOption}
+                                onPress={() => {
+                                  setSelectedEditItemCategory(category.name);
+                                  setSelectedEditItem("");
+                                  setEditItemName("");
+                                  setEditItemPrice("");
+                                }}
+                              >
+                                <ThemedText style={styles.categoryOptionText}>
+                                  {category.name}
+                                </ThemedText>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+
+                      {/* Step 2: Select Item - shown when category is selected but item is not */}
+                      {selectedEditItemCategory && !selectedEditItem && (
+                        <View style={styles.itemSelector}>
+                          <ThemedText style={styles.selectorLabel}>
+                            {t("inventoryEdit.selectItemToEdit")}
+                          </ThemedText>
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.itemScroll}
+                          >
+                            {editCategoryItems.map((item) => (
+                              <TouchableOpacity
+                                key={item.id}
+                                style={styles.itemOption}
+                                onPress={() => {
+                                  setSelectedEditItem(item.name);
+                                  setEditItemName(item.name);
+                                  setEditItemPrice(
+                                    item.price?.toString() || ""
+                                  );
+                                }}
+                              >
+                                <ThemedText style={styles.itemOptionText}>
+                                  {item.name}
+                                </ThemedText>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+
+                      {/* Step 3: Enter New Name - shown when item is selected */}
+                      {selectedEditItem && (
+                        <>
+                          <TextInput
+                            style={styles.input}
+                            placeholder={t("inventoryEdit.enterNewItemName")}
+                            placeholderTextColor="#999"
+                            value={editItemName}
+                            onChangeText={setEditItemName}
+                            autoCapitalize="words"
+                          />
+
+                          {/* Step 4: Enter New Price */}
+                          <TextInput
+                            style={styles.input}
+                            placeholder={t("inventoryEdit.enterNewPrice")}
+                            placeholderTextColor="#999"
+                            value={editItemPrice}
+                            onChangeText={setEditItemPrice}
+                            keyboardType="numeric"
+                          />
+
+                          <TouchableOpacity
+                            style={[
+                              styles.addButton,
+                              !editItemName.trim() && styles.addButtonDisabled,
+                            ]}
+                            onPress={handleEditItem}
+                            disabled={!editItemName.trim()}
+                          >
+                            <ThemedText style={styles.addButtonText}>
+                              {t("inventoryEdit.updateItem")}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </ThemedView>
+
+                {/* Delete Item Dropdown */}
+                <ThemedView style={styles.dropdownSection}>
+                  <TouchableOpacity
+                    style={styles.dropdownHeader}
+                    onPress={() => {
+                      if (showDeleteItem) {
+                        setSelectedDeleteItemCategory("");
+                        setDeleteItemName("");
+                      }
+                      setShowDeleteItem(!showDeleteItem);
+                    }}
+                  >
+                    <ThemedText style={styles.dropdownTitle}>
+                      {t("inventoryEdit.deleteItem")}
+                    </ThemedText>
+                    <IconSymbol
+                      name={showDeleteItem ? "chevron.up" : "chevron.down"}
+                      size={20}
+                      color="#666"
+                    />
+                  </TouchableOpacity>
+
+                  {showDeleteItem && (
+                    <View style={styles.dropdownContent}>
+                      {/* Breadcrumb - shown when category is selected */}
+                      {selectedDeleteItemCategory && (
+                        <View style={styles.breadcrumbContainer}>
+                          <Breadcrumb
+                            items={[
+                              {
+                                label: selectedDeleteItemCategory,
+                                onPress: () => {
+                                  setSelectedDeleteItemCategory("");
+                                  setDeleteItemName("");
+                                },
+                                showCloseIcon: true,
+                              },
+                            ]}
+                          />
+                        </View>
+                      )}
+
+                      {/* Category Selection - hidden when category is selected */}
+                      {!selectedDeleteItemCategory && (
+                        <View style={styles.categorySelector}>
+                          <ThemedText style={styles.selectorLabel}>
+                            {t("inventoryEdit.selectCategory")}
+                          </ThemedText>
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.categoryScroll}
+                          >
+                            {inventoryData.map((category) => (
+                              <TouchableOpacity
+                                key={category.id}
+                                style={styles.categoryOption}
+                                onPress={() => {
+                                  setSelectedDeleteItemCategory(category.name);
+                                  setDeleteItemName("");
+                                }}
+                              >
+                                <ThemedText style={styles.categoryOptionText}>
+                                  {category.name}
+                                </ThemedText>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+
+                      {/* Item name input - shown when category is selected */}
+                      {selectedDeleteItemCategory && (
+                        <>
+                          <TextInput
+                            style={styles.input}
+                            placeholder={t("inventoryEdit.enterExactItemName")}
+                            placeholderTextColor="#999"
+                            value={deleteItemName}
+                            onChangeText={setDeleteItemName}
+                            autoCapitalize="words"
+                          />
+
+                          <TouchableOpacity
+                            style={[
+                              styles.deleteButton,
+                              !deleteItemName.trim() &&
+                                styles.deleteButtonDisabled,
+                            ]}
+                            onPress={handleDeleteItem}
+                            disabled={!deleteItemName.trim()}
+                          >
+                            <IconSymbol name="trash" size={16} color="white" />
+                            <ThemedText style={styles.deleteButtonText}>
+                              {t("inventoryEdit.deleteItem")}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </ThemedView>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Manual Entry Modal */}
     </ThemedView>
@@ -902,6 +914,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   scrollContainer: {
     flex: 1,

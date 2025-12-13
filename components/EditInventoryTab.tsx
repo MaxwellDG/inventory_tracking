@@ -3,7 +3,15 @@ import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useCategory } from "@/context/CategoryContext";
 import React, { useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function EditInventoryTab() {
   const [newCategory, setNewCategory] = useState("");
@@ -18,60 +26,72 @@ export default function EditInventoryTab() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          Add New Category
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Create a new category for your inventory
-        </ThemedText>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <ThemedText style={styles.label}>Category Name</ThemedText>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter category name (e.g., Beverages, Snacks)"
-            placeholderTextColor="#999"
-            value={newCategory}
-            onChangeText={setNewCategory}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[
-            styles.addButton,
-            !newCategory.trim() && styles.addButtonDisabled,
-          ]}
-          onPress={handleAddCategory}
-          disabled={!newCategory.trim()}
-        >
-          <IconSymbol name="plus" size={20} color="white" />
-          <ThemedText style={styles.addButtonText}>Add Category</ThemedText>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.categoriesSection}>
-        <ThemedText style={styles.sectionTitle}>Existing Categories</ThemedText>
-        {state.categories.map((category) => (
-          <View key={category.id} style={styles.categoryItem}>
-            <ThemedText style={styles.categoryName}>{category.name}</ThemedText>
-            <ThemedText style={styles.categoryDate}>
-              Created: {category.createdAt.toLocaleDateString()}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.header}>
+            <ThemedText type="title" style={styles.title}>
+              Add New Category
+            </ThemedText>
+            <ThemedText style={styles.subtitle}>
+              Create a new category for your inventory
             </ThemedText>
           </View>
-        ))}
-      </View>
 
-      <View style={styles.info}>
-        <ThemedText style={styles.infoText}>
-          Categories help organize your inventory items. Once added, you can add
-          items to this category in the main inventory view.
-        </ThemedText>
-      </View>
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <ThemedText style={styles.label}>Category Name</ThemedText>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter category name (e.g., Beverages, Snacks)"
+                placeholderTextColor="#999"
+                value={newCategory}
+                onChangeText={setNewCategory}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                !newCategory.trim() && styles.addButtonDisabled,
+              ]}
+              onPress={handleAddCategory}
+              disabled={!newCategory.trim()}
+            >
+              <IconSymbol name="plus" size={20} color="white" />
+              <ThemedText style={styles.addButtonText}>Add Category</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.categoriesSection}>
+            <ThemedText style={styles.sectionTitle}>
+              Existing Categories
+            </ThemedText>
+            {state.categories.map((category) => (
+              <View key={category.id} style={styles.categoryItem}>
+                <ThemedText style={styles.categoryName}>
+                  {category.name}
+                </ThemedText>
+                <ThemedText style={styles.categoryDate}>
+                  Created: {category.createdAt.toLocaleDateString()}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.info}>
+            <ThemedText style={styles.infoText}>
+              Categories help organize your inventory items. Once added, you can
+              add items to this category in the main inventory view.
+            </ThemedText>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ThemedView>
   );
 }
@@ -79,6 +99,11 @@ export default function EditInventoryTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
   },

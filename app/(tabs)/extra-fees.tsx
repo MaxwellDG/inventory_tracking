@@ -9,6 +9,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -95,54 +97,66 @@ export default function ExtraFeesScreen() {
         </ThemedText>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
-            <ThemedText style={styles.loadingText}>Loading fees...</ThemedText>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <ThemedText style={styles.errorText}>Error loading fees</ThemedText>
-          </View>
-        ) : fees.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <ThemedText style={styles.emptyText}>No fees configured</ThemedText>
-          </View>
-        ) : (
-          fees.map((fee) => (
-            <FeeCard
-              key={fee.id}
-              label={fee.name}
-              placeholder={`Enter ${fee.name.toLowerCase()}`}
-              value={feeValues[fee.id] || ""}
-              onChangeText={(value) => handleFeeChange(fee.id, value)}
-            />
-          ))
-        )}
-      </ScrollView>
-
-      {/* Save Changes Button */}
-      {fees.length > 0 && (
-        <View style={styles.saveContainer}>
-          <TouchableOpacity
-            style={[
-              styles.saveButton,
-              (!hasChanges || isUpdating) && styles.saveButtonDisabled,
-            ]}
-            onPress={handleSaveChanges}
-            disabled={!hasChanges || isUpdating}
-          >
-            {isUpdating ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <ThemedText style={styles.saveButtonText}>
-                {t("extraFees.saveChanges")}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <ThemedText style={styles.loadingText}>
+                Loading fees...
               </ThemedText>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <ThemedText style={styles.errorText}>
+                Error loading fees
+              </ThemedText>
+            </View>
+          ) : fees.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <ThemedText style={styles.emptyText}>
+                No fees configured
+              </ThemedText>
+            </View>
+          ) : (
+            fees.map((fee) => (
+              <FeeCard
+                key={fee.id}
+                label={fee.name}
+                placeholder={`Enter ${fee.name.toLowerCase()}`}
+                value={feeValues[fee.id] || ""}
+                onChangeText={(value) => handleFeeChange(fee.id, value)}
+              />
+            ))
+          )}
+        </ScrollView>
+
+        {/* Save Changes Button */}
+        {fees.length > 0 && (
+          <View style={styles.saveContainer}>
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                (!hasChanges || isUpdating) && styles.saveButtonDisabled,
+              ]}
+              onPress={handleSaveChanges}
+              disabled={!hasChanges || isUpdating}
+            >
+              {isUpdating ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <ThemedText style={styles.saveButtonText}>
+                  {t("extraFees.saveChanges")}
+                </ThemedText>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </KeyboardAvoidingView>
     </ThemedView>
   );
 }
@@ -166,6 +180,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   content: {
     flex: 1,
