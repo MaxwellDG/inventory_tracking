@@ -21,6 +21,7 @@ export const ordersApi = createApi({
           url: URL_ORDERS + `/${uuid}`,
         };
       },
+      providesTags: (result, error, uuid) => [{ type: "orders", id: uuid }],
     }),
     getOrders: builder.query<PaginatedOrdersResponse, PaginationFilters>({
       query(params) {
@@ -39,10 +40,22 @@ export const ordersApi = createApi({
         }
         const queryString = queryParams.toString();
 
+        console.log("queryString: ", queryString);
+
         return {
           url: URL_ORDERS + (queryString ? `?${queryString}` : ""),
         };
       },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ uuid }) => ({
+                type: "orders" as const,
+                id: uuid,
+              })),
+              { type: "orders", id: "LIST" },
+            ]
+          : [{ type: "orders", id: "LIST" }],
     }),
     createOrder: builder.mutation<Order, CreateOrderRequest>({
       query(body) {
@@ -72,7 +85,10 @@ export const ordersApi = createApi({
           body: updateData,
         };
       },
-      invalidatesTags: ["orders"],
+      invalidatesTags: (result, error, { order_uuid }) => [
+        "orders",
+        { type: "orders", id: order_uuid },
+      ],
     }),
     deleteOrder: builder.mutation<Order, string>({
       query(uuid) {

@@ -46,6 +46,8 @@ const MAPPING = {
   "exclamationmark.triangle.fill": "warning",
   "info.circle.fill": "info",
   "building.2.fill": "account-balance",
+  "questionmark.circle": "help-outline",
+  "questionmark.circle.fill": "help",
 } as IconMapping;
 
 /**

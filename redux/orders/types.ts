@@ -23,6 +23,7 @@ export type Order = {
   receipt_id: string | null;
   created_at: Date;
   updated_at: Date;
+  fees: Fee[];
 };
 
 export type GetOrderResponse = {

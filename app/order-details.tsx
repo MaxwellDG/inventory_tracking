@@ -1,17 +1,18 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { useToast } from "@/contexts/ToastContext";
 import {
   useDeleteOrderMutation,
   useGetOrderQuery,
   useUpdateOrderMutation,
 } from "@/redux/orders/apiSlice";
-import { ORDER_STATUS, OrderListItem } from "@/redux/orders/types";
+import { Fee, OrderListItem } from "@/redux/orders/types";
 import { useUpdateItemQuantityMutation } from "@/redux/products/apiSlice";
-import { Picker } from "@react-native-picker/picker";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -28,6 +29,7 @@ export default function OrderDetailsScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { showToast } = useToast();
 
   // Parse the order data passed from history screen
   const orderData: OrderListItem = JSON.parse(params.order as string);
@@ -43,8 +45,9 @@ export default function OrderDetailsScreen() {
 
   const [receiptId, setReceiptId] = useState("");
   const [initialReceiptId, setInitialReceiptId] = useState("");
-  const [isDelivered, setIsDelivered] = useState(false);
-  const [manualStatus, setManualStatus] = useState<string>("");
+  const [isDelivered, setIsDelivered] = useState(
+    orderData.status === "pending" || orderData.status === "completed"
+  );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [restoreInventory, setRestoreInventory] = useState(false);
 
@@ -60,10 +63,9 @@ export default function OrderDetailsScreen() {
       setInitialReceiptId(initialReceipt);
 
       // Set isDelivered based on current status
-      setIsDelivered(fullOrder.status === "pending");
-
-      // Set manual status to current order status
-      setManualStatus(fullOrder.status);
+      setIsDelivered(
+        fullOrder.status === "pending" || fullOrder.status === "completed"
+      );
     }
   }, [fullOrder]);
 
@@ -84,6 +86,11 @@ export default function OrderDetailsScreen() {
   };
 
   const handleDeliveryToggle = async (value: boolean) => {
+    if (isDeliveryDisabled) {
+      showToast(t("history.cannotToggleCompleted"), "error");
+      return;
+    }
+
     setIsDelivered(value);
     try {
       await updateOrder({
@@ -97,27 +104,10 @@ export default function OrderDetailsScreen() {
     }
   };
 
-  const handleManualStatusChange = async (value: string) => {
-    if (value === "delete") {
-      setShowDeleteModal(true);
-      // Reset to current status since we're not deleting yet
-      if (fullOrder) {
-        setManualStatus(fullOrder.status);
-      }
-    } else {
-      setManualStatus(value);
-      try {
-        await updateOrder({
-          order_uuid: orderData.uuid,
-          status: value as keyof typeof ORDER_STATUS,
-        }).unwrap();
-      } catch (error) {
-        console.error("Failed to update order status:", error);
-        // Revert if update fails
-        if (fullOrder) {
-          setManualStatus(fullOrder.status);
-        }
-      }
+  const handleDeliveryCardPress = () => {
+    console.log("isDeliveryDisabled: ", isDeliveryDisabled);
+    if (isDeliveryDisabled) {
+      showToast(t("history.cannotToggleCompleted"), "error");
     }
   };
 
@@ -157,32 +147,56 @@ export default function OrderDetailsScreen() {
   };
 
   const isReceiptIdChanged = receiptId !== initialReceiptId;
-  const showDeliveryCard = fullOrder?.receipt_id === null;
+
+  const isDeliveryDisabled = useMemo(
+    () => fullOrder?.status === "completed" || !!fullOrder?.receipt_id,
+    [fullOrder]
+  );
+
+  console.log("Full order status: ", fullOrder?.status);
+  console.log("Full order receipt_id: ", fullOrder?.receipt_id);
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Is Delivered Card - Only show when receipt_id is null */}
-        {showDeliveryCard && (
-          <View style={styles.deliveryCard}>
+        <TouchableOpacity
+          style={styles.deliveryCard}
+          activeOpacity={isDeliveryDisabled ? 0.7 : 1}
+          onPress={handleDeliveryCardPress}
+        >
+          <View style={styles.deliveryLabelContainer}>
             <ThemedText style={styles.deliveryLabel}>
               {t("history.isDelivered")}
             </ThemedText>
-            <Switch
-              value={isDelivered}
-              onValueChange={handleDeliveryToggle}
-              trackColor={{ false: "#E5E5E5", true: "#34C759" }}
-              thumbColor="#FFFFFF"
-              ios_backgroundColor="#E5E5E5"
+            <Tooltip
+              content={t("history.isDeliveredTooltip")}
+              iconSize={16}
+              iconColor="#999"
             />
           </View>
-        )}
+          <Switch
+            value={isDelivered}
+            onValueChange={handleDeliveryToggle}
+            trackColor={{ false: "#E5E5E5", true: "#34C759" }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#E5E5E5"
+            disabled={isDeliveryDisabled}
+          />
+        </TouchableOpacity>
 
         {/* Receipt ID Section */}
         <View style={styles.receiptSection}>
-          <ThemedText style={styles.receiptLabel}>
-            {t("history.receiptId")}
-          </ThemedText>
+          <View style={styles.receiptLabelContainer}>
+            <ThemedText style={styles.receiptLabel}>
+              {t("history.receiptId")}
+            </ThemedText>
+            <Tooltip
+              content={t("history.receiptIdTooltip")}
+              iconSize={16}
+              iconColor="#999"
+            />
+          </View>
           <TextInput
             style={styles.receiptInput}
             value={receiptId}
@@ -211,6 +225,7 @@ export default function OrderDetailsScreen() {
               { flexDirection: "column", alignItems: "flex-start" },
             ]}
             onPress={handleCopyUuid}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <View
               style={{
@@ -239,6 +254,18 @@ export default function OrderDetailsScreen() {
             </ThemedText>
           </View>
 
+          {/* Fee rows */}
+          {fullOrder?.fees &&
+            fullOrder.fees.length > 0 &&
+            fullOrder.fees.map((fee: Fee) => {
+              return (
+                <View key={fee.id} style={styles.summaryRow}>
+                  <ThemedText style={styles.feeLabel}>{fee.name}</ThemedText>
+                  <ThemedText style={styles.feeValue}>${fee.value}</ThemedText>
+                </View>
+              );
+            })}
+
           <View style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>
               {t("history.total")}:
@@ -256,12 +283,14 @@ export default function OrderDetailsScreen() {
               style={[
                 styles.summaryValue,
                 styles.statusText,
-                orderData.status === "completed" && styles.statusCompleted,
-                orderData.status === "pending" && styles.statusPending,
-                orderData.status === "open" && styles.statusOpen,
+                fullOrder?.status === "completed" && styles.statusCompleted,
+                fullOrder?.status === "pending" && styles.statusPending,
+                fullOrder?.status === "open" && styles.statusOpen,
               ]}
             >
-              {t(`history.${orderData.status.toLowerCase()}`)}
+              {fullOrder?.status
+                ? t(`history.${fullOrder.status.toLowerCase()}`)
+                : t(`history.${orderData.status.toLowerCase()}`)}
             </ThemedText>
           </View>
 
@@ -330,26 +359,15 @@ export default function OrderDetailsScreen() {
           )}
         </View>
 
-        {/* Manual Status Change Section */}
-        <View style={styles.manualStatusCard}>
-          <ThemedText style={styles.manualStatusLabel}>
-            {t("history.manualStatusChange")}
+        {/* Delete Button */}
+        <TouchableOpacity
+          style={styles.deleteSection}
+          onPress={() => setShowDeleteModal(true)}
+        >
+          <ThemedText style={styles.deleteText}>
+            {t("history.delete")}
           </ThemedText>
-          <Picker
-            selectedValue={manualStatus}
-            onValueChange={handleManualStatusChange}
-            style={styles.statusPicker}
-          >
-            <Picker.Item label={t("history.open")} value="open" />
-            <Picker.Item label={t("history.pendingPayment")} value="pending" />
-            <Picker.Item label={t("history.completed")} value="completed" />
-            <Picker.Item
-              label={t("history.delete")}
-              value="delete"
-              color="#FF3B30"
-            />
-          </Picker>
-        </View>
+        </TouchableOpacity>
 
         {/* Delete Confirmation Modal */}
         <Modal
@@ -467,6 +485,17 @@ const styles = StyleSheet.create({
   orderIdValue: {
     fontSize: 14,
   },
+  feeLabel: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#999",
+    paddingLeft: 12,
+  },
+  feeValue: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#999",
+  },
   totalValue: {
     fontSize: 18,
     fontWeight: "bold",
@@ -560,7 +589,7 @@ const styles = StyleSheet.create({
   deliveryCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    padding: 20,
+    paddingHorizontal: 20,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -570,6 +599,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  deliveryLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   deliveryLabel: {
     fontSize: 16,
@@ -587,11 +621,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  receiptLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
   receiptLabel: {
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
-    marginBottom: 12,
   },
   receiptInput: {
     backgroundColor: "#F8F9FA",
@@ -639,6 +678,23 @@ const styles = StyleSheet.create({
   statusPicker: {
     backgroundColor: "#F8F9FA",
     borderRadius: 8,
+  },
+  deleteSection: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 45,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: "center",
+  },
+  deleteText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FF3B30",
   },
   modalOverlay: {
     flex: 1,

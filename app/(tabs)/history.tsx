@@ -53,6 +53,9 @@ export default function HistoryScreen() {
     { pollingInterval: 10000 }
   );
 
+  console.log("ORders err: ", error);
+  console.log("selectedStatus: ", selectedStatus);
+
   const orders = ordersResponse?.data || [];
   const pagination = ordersResponse?.pagination;
 

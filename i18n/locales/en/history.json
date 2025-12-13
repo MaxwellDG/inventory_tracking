@@ -23,13 +23,16 @@
   "noItems": "No items in this order",
   "quantity": "Quantity",
   "receiptId": "Receipt ID",
+  "receiptIdTooltip": "Adding a Receipt ID will move Status to \"Completed\"",
   "enterReceiptId": "Enter receipt ID",
   "save": "Save",
-  "isDelivered": "Is Delivered",
+  "isDelivered": "Delivered",
+  "isDeliveredTooltip": "Order status will become \"Pending Payment\"",
   "manualStatusChange": "Manual Status Change",
   "delete": "Delete",
   "deleteOrder": "Delete Order",
   "deleteOrderConfirm": "Are you sure you want to delete this order? This action cannot be undone.",
   "cancel": "Cancel",
-  "restoreInventory": "Restore inventory quantities"
+  "restoreInventory": "Restore inventory quantities",
+  "cannotToggleCompleted": "Cannot toggle completed orders"
 }
