@@ -154,18 +154,18 @@ export default function LoginScreen() {
                 {isLoading ? t("login.signingIn") : t("login.signIn")}
               </ThemedText>
             </TouchableOpacity>
-          </View>
 
-          {/* Footer */}
-          <View style={styles.footer}>
-            <ThemedText style={styles.footerText}>
-              {t("login.footerText")}{" "}
-            </ThemedText>
-            <TouchableOpacity onPress={handleSignUp}>
-              <ThemedText style={styles.signUpText}>
-                {t("login.signUp")}
+            {/* Footer */}
+            <View style={styles.footer}>
+              <ThemedText style={styles.footerText}>
+                {t("login.footerText")}{" "}
               </ThemedText>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={handleSignUp}>
+                <ThemedText style={styles.signUpText}>
+                  {t("login.signUp")}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
           </View>
         </ThemedView>
       </ScrollView>
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   loginButtonDisabled: {
     backgroundColor: "#A0A0A0",
@@ -248,8 +248,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
+    marginTop: 35
   },
   footerText: {
     fontSize: 14,

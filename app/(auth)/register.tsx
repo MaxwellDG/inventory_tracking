@@ -66,6 +66,9 @@ export default function RegisterScreen() {
     }
 
     try {
+      const test = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/test`);
+      const res = await test.json();
+      console.log("res", res);
       const result = await register({
         name,
         email: email.toLowerCase(),
@@ -86,6 +89,7 @@ export default function RegisterScreen() {
 
       router.replace("/company");
     } catch (error) {
+      console.log("error", error);
       showError(error, t("register.registrationFailed"));
     }
   };
