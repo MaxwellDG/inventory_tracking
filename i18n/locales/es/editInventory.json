@@ -1,0 +1,10 @@
+{
+  "addNewCategory": "Añadir nueva categoría",
+  "createNewCategorySubtitle": "Crea una nueva categoría para tu inventario",
+  "categoryName": "Nombre de la categoría",
+  "categoryNamePlaceholder": "Introduce el nombre de la categoría (ej., Bebidas, Aperitivos)",
+  "addCategory": "Añadir categoría",
+  "existingCategories": "Categorías existentes",
+  "created": "Creado",
+  "infoText": "Las categorías ayudan a organizar los artículos de tu inventario. Una vez añadidas, puedes agregar artículos a esta categoría en la vista principal del inventario."
+}

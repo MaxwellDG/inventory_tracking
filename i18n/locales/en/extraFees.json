@@ -4,6 +4,9 @@
   "taxPlaceholder": "Enter tax amount",
   "saveChanges": "Save Changes",
   "saveSuccess": "Fees saved successfully",
-  "saveError": "Failed to save fees"
+  "saveError": "Failed to save fees",
+  "loadingFees": "Loading fees...",
+  "errorLoadingFees": "Error loading fees",
+  "noFeesConfigured": "No fees configured",
+  "enterFeePlaceholder": "Enter {feeName}"
 }
-

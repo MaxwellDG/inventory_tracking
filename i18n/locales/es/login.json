@@ -1,0 +1,21 @@
+{
+  "title": "Bienvenido",
+  "subtitle": "Inicia sesión en tu cuenta de seguimiento de inventario",
+  "emailLabel": "Dirección de correo electrónico",
+  "emailPlaceholder": "Introduce tu correo electrónico",
+  "passwordLabel": "Contraseña",
+  "passwordPlaceholder": "Introduce tu contraseña",
+  "forgotPassword": "¿Olvidaste tu contraseña?",
+  "signingIn": "Iniciando sesión...",
+  "signIn": "Iniciar sesión",
+  "footerText": "¿No tienes una cuenta?",
+  "signUp": "Regístrate",
+  "error": "Error",
+  "enterEmail": "Por favor, introduce tu dirección de correo electrónico",
+  "enterValidEmail": "Por favor, introduce una dirección de correo electrónico válida",
+  "enterPassword": "Por favor, introduce tu contraseña",
+  "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+  "success": "Éxito",
+  "loginSuccess": "¡Inicio de sesión exitoso! ¡Bienvenido al seguimiento de inventario!",
+  "loginFailed": "Error al iniciar sesión. Por favor, inténtalo de nuevo."
+}

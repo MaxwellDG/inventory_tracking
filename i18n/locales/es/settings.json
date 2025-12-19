@@ -1,0 +1,16 @@
+{
+  "title": "Configuración",
+  "exportData": "Exportar datos",
+  "members": "Miembros",
+  "extraFees": "Tarifas adicionales",
+  "configuration": "Configuración",
+  "admin": "Administrador",
+  "user": "Usuario",
+  "loggingOut": "Cerrando sesión...",
+  "logout": "Cerrar sesión",
+  "logoutTitle": "Cerrar sesión",
+  "logoutConfirm": "¿Estás seguro de que deseas cerrar sesión?",
+  "cancel": "Cancelar",
+  "copied": "¡Copiado!",
+  "companyIdCopied": "ID de empresa copiado al portapapeles"
+}

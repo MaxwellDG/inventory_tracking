@@ -7,6 +7,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 // for passing in lng and translations on init
 
 import enTranslations from "./locales/en";
+import esTranslations from "./locales/es";
 
 i18n
   // detect user language
@@ -22,6 +23,9 @@ i18n
     resources: {
       en: {
         translation: enTranslations,
+      },
+      es: {
+        translation: esTranslations,
       },
     },
     interpolation: {

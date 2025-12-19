@@ -1,0 +1,17 @@
+{
+  "title": "Exportar datos",
+  "csv": "CSV",
+  "infoMessage": "La exportación enviará los datos del pedido a la dirección de correo electrónico proporcionada. Solo se incluirán los pedidos con estado 'Completado'.",
+  "startDate": "Fecha de inicio",
+  "endDate": "Fecha de fin",
+  "selectDate": "Seleccionar fecha",
+  "emailAddress": "Dirección de correo electrónico",
+  "emailPlaceholder": "Introduce tu correo electrónico",
+  "submit": "Enviar",
+  "error": "Error",
+  "selectBothDates": "Por favor, selecciona las fechas de inicio y fin",
+  "enterEmail": "Por favor, introduce tu dirección de correo electrónico",
+  "success": "Éxito",
+  "exportRequestSubmitted": "¡Solicitud de exportación enviada correctamente!",
+  "failedToSubmit": "Error al enviar la solicitud de exportación. Por favor, inténtalo de nuevo."
+}

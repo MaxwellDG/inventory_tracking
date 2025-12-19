@@ -99,7 +99,10 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
           } else {
             const categoryId = category?.id;
             if (!categoryId) {
-              Alert.alert("Error", "Selected category not found.");
+              Alert.alert(
+                t("inventoryEdit.error"),
+                t("inventoryEdit.selectedCategoryNotFound")
+              );
               return;
             }
             await createItem({
@@ -143,7 +146,7 @@ export function ManualEntryButton({ inventoryData }: ManualEntryButtonProps) {
         }
 
         handleCloseModal();
-        showToast("Inventory updated", "success");
+        showToast(t("inventoryEdit.inventoryUpdated"), "success");
       } catch (error) {
         showError(error, t("inventoryEdit.failedToProcessManualEntry"));
       }

@@ -67,5 +67,6 @@
   "itemNotFoundInInventory": "Item not found in inventory. Cannot sell items that don't exist.",
   "manualEntrySubmitted": "Manual entry submitted: {{action}} {{itemName}} from {{categoryName}}{{quantityText}}",
   "failedToProcessManualEntry": "Failed to process manual entry. Please try again.",
-  "selectBothCategoryAndItem": "Please select both category and item"
+  "selectBothCategoryAndItem": "Please select both category and item",
+  "inventoryUpdated": "Inventory updated"
 }

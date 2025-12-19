@@ -1,0 +1,12 @@
+{
+  "title": "Tarifas adicionales",
+  "tax": "Impuesto",
+  "taxPlaceholder": "Introduce el monto del impuesto",
+  "saveChanges": "Guardar cambios",
+  "saveSuccess": "Tarifas guardadas correctamente",
+  "saveError": "Error al guardar las tarifas",
+  "loadingFees": "Cargando tarifas...",
+  "errorLoadingFees": "Error al cargar las tarifas",
+  "noFeesConfigured": "No hay tarifas configuradas",
+  "enterFeePlaceholder": "Introduce {feeName}"
+}

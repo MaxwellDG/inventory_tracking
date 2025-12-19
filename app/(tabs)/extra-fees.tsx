@@ -107,19 +107,19 @@ export default function ExtraFeesScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#007AFF" />
               <ThemedText style={styles.loadingText}>
-                Loading fees...
+                {t("extraFees.loadingFees")}
               </ThemedText>
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
               <ThemedText style={styles.errorText}>
-                Error loading fees
+                {t("extraFees.errorLoadingFees")}
               </ThemedText>
             </View>
           ) : fees.length === 0 ? (
             <View style={styles.emptyContainer}>
               <ThemedText style={styles.emptyText}>
-                No fees configured
+                {t("extraFees.noFeesConfigured")}
               </ThemedText>
             </View>
           ) : (
@@ -127,7 +127,9 @@ export default function ExtraFeesScreen() {
               <FeeCard
                 key={fee.id}
                 label={fee.name}
-                placeholder={`Enter ${fee.name.toLowerCase()}`}
+                placeholder={t("extraFees.enterFeePlaceholder", {
+                  feeName: fee.name.toLowerCase(),
+                })}
                 value={feeValues[fee.id] || ""}
                 onChangeText={(value) => handleFeeChange(fee.id, value)}
               />

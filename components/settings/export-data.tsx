@@ -119,10 +119,7 @@ export default function ExportDataScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.infoCard}>
             <ThemedText style={styles.infoText}>
-              Exporting will send Order data to the email address provided. Only
-              Orders with a status of{" "}
-              <ThemedText style={styles.boldText}>Completed</ThemedText> will be
-              exported.
+              {t("exportData.infoMessage")}
             </ThemedText>
           </View>
 

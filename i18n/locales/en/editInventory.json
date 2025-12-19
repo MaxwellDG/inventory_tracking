@@ -1,0 +1,10 @@
+{
+  "addNewCategory": "Add New Category",
+  "createNewCategorySubtitle": "Create a new category for your inventory",
+  "categoryName": "Category Name",
+  "categoryNamePlaceholder": "Enter category name (e.g., Beverages, Snacks)",
+  "addCategory": "Add Category",
+  "existingCategories": "Existing Categories",
+  "created": "Created",
+  "infoText": "Categories help organize your inventory items. Once added, you can add items to this category in the main inventory view."
+}

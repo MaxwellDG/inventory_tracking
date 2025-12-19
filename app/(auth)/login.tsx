@@ -1,3 +1,4 @@
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useApiError } from "@/hooks/use-api-error";
@@ -91,12 +92,17 @@ export default function LoginScreen() {
         <ThemedView style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
-            <ThemedText type="title" style={styles.title}>
-              {t("login.title")}
-            </ThemedText>
-            <ThemedText style={styles.subtitle}>
-              {t("login.subtitle")}
-            </ThemedText>
+            <View style={styles.headerContent}>
+              <View style={styles.headerText}>
+                <ThemedText type="title" style={styles.title}>
+                  {t("login.title")}
+                </ThemedText>
+                <ThemedText style={styles.subtitle}>
+                  {t("login.subtitle")}
+                </ThemedText>
+              </View>
+              <LanguagePicker variant="compact" />
+            </View>
           </View>
 
           {/* Form */}
@@ -187,19 +193,26 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    alignItems: "center",
     marginBottom: 40,
+  },
+  headerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  headerText: {
+    flex: 1,
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 8,
-    textAlign: "center",
+    textAlign: "left",
   },
   subtitle: {
     fontSize: 16,
     opacity: 0.7,
-    textAlign: "center",
+    textAlign: "left",
     lineHeight: 22,
   },
   form: {
@@ -250,7 +263,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: 35
+    marginTop: 35,
   },
   footerText: {
     fontSize: 14,

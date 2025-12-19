@@ -1,0 +1,6 @@
+{
+  "title": "Inventario",
+  "loading": "Cargando inventario...",
+  "error": "Error al cargar el inventario. Por favor, inténtalo de nuevo.",
+  "itemsCount": "{{count}} artículos"
+}

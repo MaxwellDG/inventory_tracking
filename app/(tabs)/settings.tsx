@@ -140,6 +140,19 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.section}>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => router.push("/configuration")}
+        >
+          <View style={styles.exportContent}>
+            <IconSymbol name="gearshape.fill" size={24} color="#007AFF" />
+            <Text style={styles.exportText}>{t("settings.configuration")}</Text>
+          </View>
+          <IconSymbol name="chevron.right" size={16} color="#999" />
+        </TouchableOpacity>
+      </View>
+
       {/* Logout Section */}
       <View style={styles.section}>
         <TouchableOpacity

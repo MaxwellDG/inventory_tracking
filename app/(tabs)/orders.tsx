@@ -357,7 +357,7 @@ export default function OrdersScreen() {
 
                 await createOrder(orderPayload).unwrap();
 
-                showToast("Order created", "success");
+                showToast(t("orders.orderCreated"), "success");
                 setPendingItems([]); // Clear pending items after submission
               } catch (error: any) {
                 showToast(

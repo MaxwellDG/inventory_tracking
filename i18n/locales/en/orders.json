@@ -7,6 +7,7 @@
   "orderSubmitted": "Order Submitted",
   "orderSubmittedSuccess": "Submitted 1 order with {{count}} item(s) successfully!",
   "orderSubmitError": "Failed to submit order. Please try again.",
+  "orderCreated": "Order created",
   "addToOrder": "Add to order",
   "loadingInventory": "Loading inventory...",
   "selectCategory": "Select Category",

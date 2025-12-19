@@ -1,0 +1,7 @@
+{
+  "title": "Unirse a una empresa",
+  "placeholder": "Introduce el número de ID de la empresa",
+  "continue": "Continuar",
+  "error": "Error",
+  "failedToJoin": "Error al unirse a la empresa"
+}

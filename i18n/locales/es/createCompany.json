@@ -1,0 +1,8 @@
+{
+  "title": "Cuéntanos sobre tu empresa",
+  "placeholder": "Introduce el nombre de la empresa",
+  "continue": "Continuar",
+  "addLogo": "Añadir logotipo",
+  "permissionRequired": "Permiso requerido",
+  "permissionMessage": "Se requiere permiso para acceder a las fotos para subir el logotipo de la empresa."
+}

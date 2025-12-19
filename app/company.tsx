@@ -54,11 +54,11 @@ const styles = StyleSheet.create({
   content: {
     width: "100%",
     maxWidth: 400,
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   title: {
     fontSize: 24,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 40,
     paddingHorizontal: 20,
     lineHeight: 32,
