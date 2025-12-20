@@ -1,12 +1,19 @@
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useToast } from "@/contexts/ToastContext";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function ConfigurationScreen() {
   const { t } = useTranslation();
+  const { showToast } = useToast();
+
+  const handleLanguageChange = (locale: string) => {
+    // Language is already saved to AsyncStorage and changed in i18n by LanguagePicker
+    showToast(t("configuration.languageChanged"), "success");
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -15,7 +22,7 @@ export default function ConfigurationScreen() {
           <ThemedText style={styles.sectionLabel}>
             {t("configuration.language")}
           </ThemedText>
-          <LanguagePicker />
+          <LanguagePicker onChange={handleLanguageChange} />
         </View>
       </ScrollView>
     </ThemedView>

@@ -1,4 +1,6 @@
 {
   "title": "Configuration",
-  "language": "Language"
+  "language": "Language",
+  "languageChanged": "Language changed",
+  "languageUpdateFailed": "Failed to update language"
 }

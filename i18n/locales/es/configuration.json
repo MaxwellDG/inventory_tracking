@@ -1,4 +1,6 @@
 {
   "title": "Configuración",
-  "language": "Idioma"
+  "language": "Idioma",
+  "languageChanged": "Idioma cambiado",
+  "languageUpdateFailed": "Error al actualizar el idioma"
 }

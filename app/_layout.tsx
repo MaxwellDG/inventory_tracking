@@ -19,6 +19,7 @@ import { setCredentials } from "@/redux/auth/slice";
 import rootStore, { RootState } from "@/redux/store";
 
 import "@/i18n";
+import i18next from "@/i18n";
 
 // Component to handle auth rehydration
 function AuthRehydrator({ children }: { children: React.ReactNode }) {
@@ -60,7 +61,7 @@ function AuthRehydrator({ children }: { children: React.ReactNode }) {
             );
           } catch (error) {
             // If fetching user data fails, clear the invalid token
-            rootStore.dispatch(setCredentials({ user: null, token: null }));
+            rootStore.dispatch(setCredentials({ user: null, token: undefined, refresh_token: undefined }));
           }
         } else {
           console.log("No persisted auth tokens found");

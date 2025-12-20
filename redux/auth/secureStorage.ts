@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 export const STORAGE_KEYS = {
   REFRESH_TOKEN: "refresh_token",
   ACCESS_TOKEN: "access_token",
+  LOCALE: "locale",
 } as const;
 
 /**
