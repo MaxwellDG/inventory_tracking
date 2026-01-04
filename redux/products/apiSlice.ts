@@ -35,7 +35,7 @@ export const productsApi = createApi({
       query(body) {
         return {
           method: "PATCH",
-          url: URL_PRODUCTS_CATEGORIES,
+          url: `${URL_PRODUCTS_CATEGORIES}/${body.id}`,
           body,
         };
       },

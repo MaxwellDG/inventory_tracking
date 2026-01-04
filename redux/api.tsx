@@ -20,7 +20,6 @@ export const baseQuery = (auth: boolean = false, path: string = "") => {
   }
 
   const fullUrl = apiUrl + "/api" + path;
-  console.log("fullUrl", fullUrl);
 
   return fetchBaseQuery({
     baseUrl: fullUrl,

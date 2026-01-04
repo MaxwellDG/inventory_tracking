@@ -28,8 +28,6 @@ export default function ExportDataScreen() {
   const [email, setEmail] = useState(user?.email || "");
   const [exportData, { isLoading, error }] = useExportDataMutation();
 
-  console.log("Export Data Error:", error);
-
   const handleStartDatePress = () => {
     setShowStartDatePicker(true);
   };
@@ -73,12 +71,7 @@ export default function ExportDataScreen() {
       Alert.alert(t("exportData.error"), t("exportData.enterEmail"));
       return;
     }
-    console.log("data", {
-      email: email.trim(),
-      type: "csv",
-      start_date: startDate.getTime(),
-      end_date: endDate.getTime(),
-    });
+
     await exportData({
       email: email.trim(),
       type: "csv",

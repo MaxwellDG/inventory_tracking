@@ -4,6 +4,7 @@ import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useToast } from "@/contexts/ToastContext";
 import { useGetFeesQuery, useUpdateFeeMutation } from "@/redux/fees/apiSlice";
+import { RootState } from "@/redux/store";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,10 +17,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 
 export default function ExtraFeesScreen() {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAdmin = user?.role === "admin";
   const { data: fees = [], isLoading, error } = useGetFeesQuery();
   const [updateFee, { isLoading: isUpdating }] = useUpdateFeeMutation();
   const [feeValues, setFeeValues] = useState<Record<number, string>>({});
@@ -132,13 +136,14 @@ export default function ExtraFeesScreen() {
                 })}
                 value={feeValues[fee.id] || ""}
                 onChangeText={(value) => handleFeeChange(fee.id, value)}
+                editable={isAdmin}
               />
             ))
           )}
         </ScrollView>
 
-        {/* Save Changes Button */}
-        {fees.length > 0 && (
+        {/* Save Changes Button - Only show for admins */}
+        {isAdmin && fees.length > 0 && (
           <View style={styles.saveContainer}>
             <TouchableOpacity
               style={[

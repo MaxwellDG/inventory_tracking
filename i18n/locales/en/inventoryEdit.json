@@ -17,7 +17,7 @@
   "addNewItem": "Add New Item",
   "itemNamePlaceholder": "Item name",
   "quantityPlaceholder": "Quantity",
-  "unitPlaceholder": "Unit (lbs, bottles, etc.)",
+  "unitPlaceholder": "Unit type",
   "pricePlaceholder": "Price (optional)",
   "selectCategory": "Select Category:",
   "addItem": "Add Item",
@@ -68,5 +68,12 @@
   "manualEntrySubmitted": "Manual entry submitted: {{action}} {{itemName}} from {{categoryName}}{{quantityText}}",
   "failedToProcessManualEntry": "Failed to process manual entry. Please try again.",
   "selectBothCategoryAndItem": "Please select both category and item",
-  "inventoryUpdated": "Inventory updated"
+  "inventoryUpdated": "Inventory updated",
+  "adminOnly": "Updating is for admins only",
+  "categoryCreated": "Category created",
+  "itemCreated": "Item created",
+  "categoryDeleted": "Category deleted",
+  "categoryUpdated": "Category updated",
+  "itemUpdated": "Item updated",
+  "itemDeleted": "Item deleted"
 }

@@ -26,6 +26,7 @@ export default function SettingsScreen() {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { showToast } = useToast();
+  const isAdmin = user?.role === "admin";
 
   const { data: companyData } = useGetCompanyQuery(user?.company_id || 0, {
     skip: !user?.company_id,
@@ -101,18 +102,21 @@ export default function SettingsScreen() {
         </View>
       )}
 
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.exportButton}
-          onPress={handleExportData}
-        >
-          <View style={styles.exportContent}>
-            <IconSymbol name="square.and.arrow.up" size={24} color="#007AFF" />
-            <Text style={styles.exportText}>{t("settings.exportData")}</Text>
-          </View>
-          <IconSymbol name="chevron.right" size={16} color="#999" />
-        </TouchableOpacity>
-      </View>
+      {/* Export Data - Only show for admins */}
+      {isAdmin && (
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.exportButton}
+            onPress={handleExportData}
+          >
+            <View style={styles.exportContent}>
+              <IconSymbol name="square.and.arrow.up" size={24} color="#007AFF" />
+              <Text style={styles.exportText}>{t("settings.exportData")}</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={16} color="#999" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.section}>
         <TouchableOpacity

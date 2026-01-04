@@ -13,6 +13,7 @@ import {
   useUpdateCategoryMutation,
   useUpdateItemMutation,
 } from "@/redux/products/apiSlice";
+import { RootState } from "@/redux/store";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,11 +26,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 
 export default function UpdateScreen() {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { showError } = useApiError();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAdmin = user?.role === "admin";
 
   const { data: inventoryData = [], isLoading, error } = useGetInventoryQuery();
 
@@ -96,9 +100,10 @@ export default function UpdateScreen() {
         }).unwrap();
         setNewCategoryName("");
         setShowAddCategory(false);
-        showToast("Category created", "success");
+        showToast(t("inventoryEdit.categoryCreated"), "success");
       } catch (error) {
-        showError(error, t("inventoryEdit.failedToAddCategory"));
+        const msg = (error as any)?.data?.message || t("inventoryEdit.failedToAddCategory");
+        showError(error, msg);
       }
     }
   };
@@ -126,7 +131,7 @@ export default function UpdateScreen() {
           name: newItemName.trim(),
           quantity: parseInt(newItemQuantity) || 0,
           type_of_unit: newItemUnit.trim(),
-          price: newItemPrice.trim() ? parseFloat(newItemPrice) : undefined,
+          ...(newItemPrice.trim() && { price: parseFloat(newItemPrice) }),
           category_id: categoryId,
         }).unwrap();
 
@@ -134,12 +139,13 @@ export default function UpdateScreen() {
         setNewItemName("");
         setNewItemQuantity("");
         setNewItemUnit("");
-        showToast("Item created", "success");
+        showToast(t("inventoryEdit.itemCreated"), "success");
         setNewItemPrice("");
         setSelectedCategory("");
         setShowAddItem(false);
       } catch (error) {
-        showError(error, t("inventoryEdit.failedToAddItem"));
+        const msg = (error as any)?.data?.message || t("inventoryEdit.failedToAddItem");
+        showError(error, msg);
       }
     } else {
       Alert.alert(
@@ -159,9 +165,10 @@ export default function UpdateScreen() {
           await deleteCategory(categoryToDelete.id).unwrap();
           setDeleteCategoryName("");
           setShowDeleteCategory(false);
-          showToast("Category deleted", "success");
+          showToast(t("inventoryEdit.categoryDeleted"), "success");
         } catch (error) {
-          showError(error, t("inventoryEdit.failedToDeleteCategory"));
+          const msg = (error as any)?.data?.message || t("inventoryEdit.failedToDeleteCategory");
+          showError(error, msg);
         }
       } else {
         Alert.alert(
@@ -205,9 +212,10 @@ export default function UpdateScreen() {
           setSelectedEditCategory("");
           setEditCategoryName("");
           setShowEditCategory(false);
-          showToast("Category updated", "success");
+          showToast(t("inventoryEdit.categoryUpdated"), "success");
         } catch (error) {
-          showError(error, t("inventoryEdit.failedToUpdateCategory"));
+          const msg = (error as any)?.data?.message || t("inventoryEdit.failedToUpdateCategory");
+          showError(error, msg);
         }
       }
     } else {
@@ -252,10 +260,10 @@ export default function UpdateScreen() {
           setEditItemName("");
           setEditItemPrice("");
           setShowEditItem(false);
-          showToast("Item updated", "success");
+          showToast(t("inventoryEdit.itemUpdated"), "success");
         } catch (error) {
-          console.log("Failed to update item:", error);
-          showError(error, t("inventoryEdit.failedToUpdateItem"));
+          const msg = (error as any)?.data?.message || t("inventoryEdit.failedToUpdateItem");
+          showError(error, msg);
         }
       }
     } else {
@@ -277,9 +285,10 @@ export default function UpdateScreen() {
           setDeleteItemName("");
           setSelectedDeleteItemCategory("");
           setShowDeleteItem(false);
-          showToast("Item deleted", "success");
+          showToast(t("inventoryEdit.itemDeleted"), "success");
         } catch (error) {
-          showError(error, t("inventoryEdit.failedToDeleteItem"));
+          const msg = (error as any)?.data?.message || t("inventoryEdit.failedToDeleteItem");
+          showError(error, msg);
         }
       } else {
         Alert.alert(
@@ -896,6 +905,18 @@ export default function UpdateScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
+      {/* Admin-only overlay */}
+      {!isAdmin && (
+        <>
+          <View style={styles.overlay} pointerEvents="box-only" />
+          <View style={styles.adminInfoCard} pointerEvents="none">
+            <ThemedText style={styles.adminInfoText}>
+              {t("inventoryEdit.adminOnly")}
+            </ThemedText>
+          </View>
+        </>
+      )}
+
       {/* Manual Entry Modal */}
     </ThemedView>
   );
@@ -914,6 +935,40 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(128, 128, 128, 0.6)",
+    zIndex: 999,
+  },
+  adminInfoCard: {
+    position: "absolute",
+    bottom: 0,
+    left: 20,
+    right: 20,
+    transform: [{ translateY: -50 }],
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 36,
+    borderWidth: 2,
+    borderColor: "#ADD8E6",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
+  },
+  adminInfoText: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: "#333",
+    textAlign: "center",
+    fontWeight: "600",
   },
   keyboardAvoidingView: {
     flex: 1,

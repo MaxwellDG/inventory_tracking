@@ -69,7 +69,7 @@ function AuthRehydrator({ children }: { children: React.ReactNode }) {
             );
           }
         } else {
-          console.log("No persisted auth tokens found");
+          
         }
       } catch (error) {
         console.error("Error rehydrating auth state:", error);

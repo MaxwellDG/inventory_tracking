@@ -11,6 +11,7 @@ import {
 } from "@/redux/orders/apiSlice";
 import { OrderListItem } from "@/redux/orders/types";
 import { useUpdateItemQuantityMutation } from "@/redux/products/apiSlice";
+import { RootState } from "@/redux/store";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -27,12 +28,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 
 export default function OrderDetailsScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAdmin = user?.role === "admin";
 
   // Parse the order data passed from history screen
   const orderData: OrderListItem = JSON.parse(params.order as string);
@@ -106,7 +110,6 @@ export default function OrderDetailsScreen() {
   };
 
   const handleDeliveryCardPress = () => {
-    console.log("isDeliveryDisabled: ", isDeliveryDisabled);
     if (isDeliveryDisabled) {
       showToast(t("history.cannotToggleCompleted"), "error");
     }
@@ -154,8 +157,11 @@ export default function OrderDetailsScreen() {
     [fullOrder]
   );
 
-  console.log("Full order status: ", fullOrder?.status);
-  console.log("Full order receipt_id: ", fullOrder?.receipt_id);
+  // Check if user can delete this order (admin or order creator)
+  const canDeleteOrder = useMemo(
+    () => isAdmin || orderData.user.id === user?.id,
+    [isAdmin, orderData.user.id, user?.id]
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -204,11 +210,15 @@ export default function OrderDetailsScreen() {
               />
             </View>
             <TextInput
-              style={styles.receiptInput}
+              style={[
+                styles.receiptInput,
+                !isAdmin && styles.receiptInputDisabled,
+              ]}
               value={receiptId}
               onChangeText={setReceiptId}
               placeholder={t("history.enterReceiptId")}
               placeholderTextColor="#999"
+              editable={isAdmin}
             />
             <TouchableOpacity
               style={[
@@ -369,15 +379,17 @@ export default function OrderDetailsScreen() {
             )}
           </View>
 
-          {/* Delete Button */}
-          <TouchableOpacity
-            style={styles.deleteSection}
-            onPress={() => setShowDeleteModal(true)}
-          >
-            <ThemedText style={styles.deleteText}>
-              {t("history.delete")}
-            </ThemedText>
-          </TouchableOpacity>
+          {/* Delete Button - Only show if user is admin or order creator */}
+          {canDeleteOrder && (
+            <TouchableOpacity
+              style={styles.deleteSection}
+              onPress={() => setShowDeleteModal(true)}
+            >
+              <ThemedText style={styles.deleteText}>
+                {t("history.delete")}
+              </ThemedText>
+            </TouchableOpacity>
+          )}
 
           {/* Delete Confirmation Modal */}
           <Modal
@@ -655,6 +667,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "#E5E5E5",
+  },
+  receiptInputDisabled: {
+    backgroundColor: "#F5F5F5",
+    color: "#999",
   },
   saveButton: {
     backgroundColor: "#007AFF",

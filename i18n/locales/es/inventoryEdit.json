@@ -17,7 +17,7 @@
   "addNewItem": "Añadir nuevo artículo",
   "itemNamePlaceholder": "Nombre del artículo",
   "quantityPlaceholder": "Cantidad",
-  "unitPlaceholder": "Unidad (kg, botellas, etc.)",
+  "unitPlaceholder": "Tipo de unidad",
   "pricePlaceholder": "Precio (opcional)",
   "selectCategory": "Selecciona categoría:",
   "addItem": "Añadir artículo",
@@ -68,5 +68,12 @@
   "manualEntrySubmitted": "Entrada manual enviada: {{action}} {{itemName}} de {{categoryName}}{{quantityText}}",
   "failedToProcessManualEntry": "Error al procesar la entrada manual. Por favor, inténtalo de nuevo.",
   "selectBothCategoryAndItem": "Por favor, selecciona categoría y artículo",
-  "inventoryUpdated": "Inventario actualizado"
+  "inventoryUpdated": "Inventario actualizado",
+  "adminOnly": "Actualizar es solo para administradores",
+  "categoryCreated": "Categoría creada",
+  "itemCreated": "Artículo creado",
+  "categoryDeleted": "Categoría eliminada",
+  "categoryUpdated": "Categoría actualizada",
+  "itemUpdated": "Artículo actualizado",
+  "itemDeleted": "Artículo eliminado"
 }

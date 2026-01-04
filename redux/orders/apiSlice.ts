@@ -40,8 +40,6 @@ export const ordersApi = createApi({
         }
         const queryString = queryParams.toString();
 
-        console.log("queryString: ", queryString);
-
         return {
           url: URL_ORDERS + (queryString ? `?${queryString}` : ""),
         };

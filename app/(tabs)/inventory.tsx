@@ -3,12 +3,16 @@ import { ManualEntryButton } from "@/components/ManualEntryButton";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useGetInventoryQuery } from "@/redux/products/apiSlice";
+import { RootState } from "@/redux/store";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
 
 export default function InventoryScreen() {
   const { t } = useTranslation();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAdmin = user?.role === "admin";
 
   const { data: inventoryData = [], isLoading, error } = useGetInventoryQuery();
 
@@ -21,10 +25,12 @@ export default function InventoryScreen() {
         </ThemedText>
       </View>
 
-      {/* Manual Entry Button */}
-      <View style={styles.buttonContainer}>
-        <ManualEntryButton inventoryData={inventoryData} />
-      </View>
+      {/* Manual Entry Button - Only show for admins */}
+      {isAdmin && (
+        <View style={styles.buttonContainer}>
+          <ManualEntryButton inventoryData={inventoryData} />
+        </View>
+      )}
 
       {/* Inventory Content */}
       <ScrollView

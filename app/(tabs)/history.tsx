@@ -53,9 +53,6 @@ export default function HistoryScreen() {
     { pollingInterval: 10000 }
   );
 
-  console.log("ORders err: ", error);
-  console.log("selectedStatus: ", selectedStatus);
-
   const orders = ordersResponse?.data || [];
   const pagination = ordersResponse?.pagination;
 
@@ -144,12 +141,13 @@ export default function HistoryScreen() {
               onValueChange={(value) => setSelectedStatus(value)}
               style={styles.statusPicker}
             >
-              <Picker.Item label={t("history.completed")} value="completed" />
+              <Picker.Item label={t("history.completed")} value="completed" color="#000" />
               <Picker.Item
                 label={t("history.pendingPayment")}
                 value="pending"
+                color="#000"
               />
-              <Picker.Item label={t("history.open")} value="open" />
+              <Picker.Item label={t("history.open")} value="open" color="#000" />
             </Picker>
           </View>
           <View style={styles.dateFilterContainer}>

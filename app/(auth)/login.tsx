@@ -240,6 +240,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     backgroundColor: "#F8F9FA",
+    color: "#000",
   },
   forgotPassword: {
     alignSelf: "flex-end",

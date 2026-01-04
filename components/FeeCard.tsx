@@ -7,6 +7,7 @@ type FeeCardProps = {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+  editable?: boolean;
 };
 
 export function FeeCard({
@@ -14,6 +15,7 @@ export function FeeCard({
   placeholder,
   value,
   onChangeText,
+  editable = true,
 }: FeeCardProps) {
   const handleChange = (text: string) => {
     // Only allow numbers and decimal point
@@ -30,7 +32,7 @@ export function FeeCard({
     <View style={styles.inputSection}>
       <ThemedText style={styles.inputLabel}>{label}</ThemedText>
       <TextInput
-        style={styles.input}
+        style={[styles.input, !editable && styles.inputDisabled]}
         placeholder={placeholder}
         placeholderTextColor="#999"
         value={value}
@@ -38,6 +40,7 @@ export function FeeCard({
         keyboardType="numeric"
         autoCapitalize="none"
         autoCorrect={false}
+        editable={editable}
       />
     </View>
   );
@@ -65,5 +68,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    color: "#000",
+  },
+  inputDisabled: {
+    backgroundColor: "#F5F5F5",
+    color: "#999",
   },
 });

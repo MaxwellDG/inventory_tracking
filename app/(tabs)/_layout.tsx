@@ -26,6 +26,7 @@ export default function TabLayout() {
           paddingBottom: 20,
           overflow: "visible",
           backgroundColor: "#FFFFFF", // Force white background in all modes
+          borderTopColor: "#E5E5E7", // Force light grey border in all modes
         },
       }}
     >

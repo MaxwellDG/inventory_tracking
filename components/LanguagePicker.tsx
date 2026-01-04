@@ -44,8 +44,8 @@ export function LanguagePicker({ variant = "default", onChange }: LanguagePicker
         onValueChange={handleLanguageChange}
         style={[styles.picker, isCompact && styles.pickerCompact]}
       >
-        <Picker.Item label="🇺🇸 English" value="en" />
-        <Picker.Item label="🇪🇸 Español" value="es" />
+        <Picker.Item label="🇺🇸 English" value="en" color="#000" />
+        <Picker.Item label="🇪🇸 Español" value="es" color="#000" />
       </Picker>
     </View>
   );
