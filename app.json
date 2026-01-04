@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.inventorytracking",
+      "bundleIdentifier": "com.jajamundo.inventorytracking",
       "infoPlist": {
         "NSFaceIDUsageDescription": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
       }
@@ -24,7 +24,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.inventorytracking"
+      "package": "com.jajamundo.inventorytracking",
+      "versionCode": 1.0
     },
     "web": {
       "output": "static",

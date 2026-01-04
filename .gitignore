@@ -16,6 +16,7 @@ expo-env.d.ts
 *.p8
 *.p12
 *.key
+*.keystore
 *.mobileprovision
 
 # Metro
@@ -37,6 +38,13 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# App Signing & Release Credentials
+KEYSTORE_INFO.txt
+**/release.keystore
+**/upload-keystore.keystore
+play-store-credentials.json
+google-services.json
 
 # generated native folders
 /ios

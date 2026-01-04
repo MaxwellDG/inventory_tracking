@@ -68,8 +68,14 @@ export default function LoginScreen() {
         await save(STORAGE_KEYS.ACCESS_TOKEN, result.token);
       }
 
-      // Navigate to inventory tab
-      router.replace("/(tabs)/inventory");
+      // Check if user has a company_id
+      if (!result.user?.company_id) {
+        // User doesn't have a company, redirect to company screen
+        router.replace("/company");
+      } else {
+        // User has a company, navigate to inventory tab
+        router.replace("/(tabs)/inventory");
+      }
     } catch (error) {
       showError(error, t("login.loginFailed"));
     }

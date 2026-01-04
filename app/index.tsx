@@ -6,8 +6,9 @@ export default function Index() {
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated
   );
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  if (isAuthenticated) {
+  if (isAuthenticated && user?.company_id) {
     return <Redirect href="/(tabs)/inventory" />;
   }
 

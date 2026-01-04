@@ -19,7 +19,6 @@ import { setCredentials } from "@/redux/auth/slice";
 import rootStore, { RootState } from "@/redux/store";
 
 import "@/i18n";
-import i18next from "@/i18n";
 
 // Component to handle auth rehydration
 function AuthRehydrator({ children }: { children: React.ReactNode }) {
@@ -61,7 +60,13 @@ function AuthRehydrator({ children }: { children: React.ReactNode }) {
             );
           } catch (error) {
             // If fetching user data fails, clear the invalid token
-            rootStore.dispatch(setCredentials({ user: null, token: undefined, refresh_token: undefined }));
+            rootStore.dispatch(
+              setCredentials({
+                user: null,
+                token: undefined,
+                refresh_token: undefined,
+              })
+            );
           }
         } else {
           console.log("No persisted auth tokens found");
@@ -88,25 +93,36 @@ function AuthRehydrator({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// todo: if the user closes the app after they've been registered but BEFORE they've chosen a company, then they should
-// be redirected to the 'company' screen on app load
-
 // Navigation component that conditionally renders based on auth state
 function Navigation() {
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated
   );
+  const user = useSelector((state: RootState) => state.auth.user);
   const router = useRouter();
   const segments = useSegments();
 
-  // Automatically redirect when auth is cleared
+  // Automatically redirect when auth is cleared or user lacks company_id
   useEffect(() => {
     const inTabsGroup = segments[0] === "(tabs)";
+    const inCompanyFlow =
+      segments[0] === "company" ||
+      segments[0] === "create-company" ||
+      segments[0] === "join-company";
 
     if (!isAuthenticated && inTabsGroup) {
+      // Not authenticated but in tabs - redirect to login
       router.replace("/(auth)/login");
+    } else if (
+      isAuthenticated &&
+      !user?.company_id &&
+      !inCompanyFlow &&
+      inTabsGroup
+    ) {
+      // Authenticated but no company_id and not in company flow - redirect to company screen
+      router.replace("/company");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.company_id, segments]);
 
   if (isAuthenticated) {
     // Authenticated user routes
