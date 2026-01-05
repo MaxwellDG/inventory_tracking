@@ -86,7 +86,8 @@ export default function RegisterScreen() {
 
       router.replace("/company");
     } catch (error) {
-      showError(error, t("register.registrationFailed"));
+      const msg = (error as any)?.data?.message || t("register.registrationFailed");
+      showError(error, msg);
     }
   };
 
