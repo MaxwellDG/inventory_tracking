@@ -28,5 +28,8 @@
   "total": "Total:",
   "orderLabel": "Etiqueta del pedido",
   "orderLabelPlaceholder": "Ingrese la etiqueta del pedido...",
-  "labelRequired": "La etiqueta del pedido es obligatoria"
+  "labelRequired": "La etiqueta del pedido es obligatoria",
+  "selectExistingLabel": "Por favor seleccione una etiqueta existente del menú desplegable",
+  "selectLabel": "Seleccionar etiqueta",
+  "noLabelsAvailable": "No hay etiquetas disponibles. Crea etiquetas en la pestaña Actualizar."
 }

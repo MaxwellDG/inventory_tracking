@@ -37,7 +37,6 @@ export default function SettingsScreen() {
   const handleCopyCompanyId = async () => {
     if (company?.id) {
       await Clipboard.setStringAsync(company.id.toString());
-      showToast(t("settings.companyIdCopied"), "success");
     }
   };
 

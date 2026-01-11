@@ -28,5 +28,8 @@
   "total": "Total:",
   "orderLabel": "Order Label",
   "orderLabelPlaceholder": "Enter order label...",
-  "labelRequired": "Order label is required"
+  "labelRequired": "Order label is required",
+  "selectExistingLabel": "Please select an existing label from the dropdown",
+  "selectLabel": "Select Label",
+  "noLabelsAvailable": "No labels available. Create labels in the Update tab."
 }

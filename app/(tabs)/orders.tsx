@@ -1,3 +1,4 @@
+import { LabelInput } from "@/components/LabelInput";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -16,7 +17,6 @@ import {
   PanResponder,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -291,22 +291,6 @@ export default function OrdersScreen() {
         </View>
       </View>
 
-      {/* Order Label Input */}
-      <View style={styles.labelContainer}>
-        <ThemedText style={styles.labelFieldLabel}>
-          {t("orders.orderLabel")}{" "}
-          <ThemedText style={styles.requiredStar}>*</ThemedText>
-        </ThemedText>
-        <TextInput
-          style={styles.labelInput}
-          placeholder={t("orders.orderLabelPlaceholder")}
-          placeholderTextColor="#999"
-          value={orderLabel}
-          onChangeText={setOrderLabel}
-          autoCapitalize="sentences"
-        />
-      </View>
-
       {/* Orders List */}
       <ScrollView
         style={styles.ordersList}
@@ -382,8 +366,8 @@ export default function OrdersScreen() {
                 await createOrder(orderPayload).unwrap();
 
                 showToast(t("orders.orderCreated"), "success");
-                setPendingItems([]); // Clear pending items after submission
-                setOrderLabel(""); // Clear label after submission
+                setPendingItems([]);
+                setOrderLabel("");
               } catch (error: any) {
                 showToast(
                   error?.data?.message || t("orders.orderSubmitError"),
@@ -391,7 +375,7 @@ export default function OrdersScreen() {
                 );
               }
             }}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !orderLabel.trim()}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color="white" />
@@ -428,6 +412,23 @@ export default function OrdersScreen() {
               </View>
             ) : (
               <ScrollView style={styles.modalBody}>
+                {/* Order Label Input */}
+                <View style={styles.section}>
+                  <ThemedText style={styles.sectionTitle}>
+                    {t("orders.orderLabel")}{" "}
+                  </ThemedText>
+                  <LabelInput
+                    labelId={null}
+                    labelName={orderLabel}
+                    onLabelChange={(id, name) => {
+                      setOrderLabel(name);
+                    }}
+                    placeholder={t("orders.orderLabelPlaceholder")}
+                    placeholderTextColor="#999"
+                    autoCapitalize="sentences"
+                  />
+                </View>
+
                 {/* Category Selection */}
                 <View style={styles.section}>
                   <ThemedText style={styles.sectionTitle}>
@@ -509,7 +510,7 @@ export default function OrdersScreen() {
 
                 {/* Quantity Selection */}
                 {selectedItem && (
-                  <View style={styles.section}>
+                  <View style={[styles.section, { borderBottomWidth: 0 }]}>
                     <ThemedText style={styles.sectionTitle}>
                       {t("orders.selectQuantity")}
                     </ThemedText>
@@ -567,11 +568,19 @@ export default function OrdersScreen() {
               <TouchableOpacity
                 style={[
                   styles.createButton,
-                  (!selectedCategory || !selectedItem) &&
+                  (!selectedCategory || !selectedItem || !orderLabel.trim()) &&
                     styles.createButtonDisabled,
                 ]}
-                onPress={() => handleSubmitItem(selectedItem as Item)}
-                disabled={!selectedCategory || !selectedItem}
+                onPress={() => {
+                  if (!orderLabel.trim()) {
+                    showToast(t("orders.labelRequired"), "error");
+                    return;
+                  }
+                  handleSubmitItem(selectedItem as Item);
+                }}
+                disabled={
+                  !selectedCategory || !selectedItem || !orderLabel.trim()
+                }
               >
                 <ThemedText style={styles.createButtonText}>
                   {t("orders.submitItem")}
@@ -683,28 +692,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   // Label input styles
-  labelContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  labelFieldLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
-  },
   requiredStar: {
     color: "#FF3B30",
-  },
-  labelInput: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E5E5E7",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: "#000",
   },
   // Orders list styles
   ordersList: {

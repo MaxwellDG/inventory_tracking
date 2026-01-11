@@ -5,12 +5,18 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { useToast } from "@/contexts/ToastContext";
 import { Fee } from "@/redux/fees/types";
 import {
+  useAddOrderItemMutation,
+  useDeleteOrderItemMutation,
   useDeleteOrderMutation,
   useGetOrderQuery,
   useUpdateOrderMutation,
 } from "@/redux/orders/apiSlice";
 import { OrderListItem } from "@/redux/orders/types";
-import { useUpdateItemQuantityMutation } from "@/redux/products/apiSlice";
+import {
+  useGetInventoryQuery,
+  useUpdateItemQuantityMutation,
+} from "@/redux/products/apiSlice";
+import { Category, Item } from "@/redux/products/types";
 import { RootState } from "@/redux/store";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -54,13 +60,21 @@ export default function OrderDetailsScreen() {
     orderData.status === "pending" || orderData.status === "completed"
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [restoreInventory, setRestoreInventory] = useState(false);
+  const [restoreInventory, setRestoreInventory] = useState(true);
   const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category>();
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [itemQuantity, setItemQuantity] = useState(1);
 
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation();
+  const [deleteOrderItem] = useDeleteOrderItemMutation();
+  const [addOrderItem] = useAddOrderItemMutation();
   const [updateItemQuantity] = useUpdateItemQuantityMutation();
+  const { data: inventoryData, isLoading: inventoryLoading } =
+    useGetInventoryQuery();
 
   // Set initial receipt ID and delivery status when order loads
   useEffect(() => {
@@ -166,15 +180,10 @@ export default function OrderDetailsScreen() {
     if (!itemToDelete || !fullOrder) return;
 
     try {
-      // Filter out the item to delete from the order's items
-      const updatedItems = fullOrder.items.filter(
-        (item) => item.id !== itemToDelete.id
-      );
-
-      // Update the order with the new items list
-      await updateOrder({
+      // Use the new delete item endpoint
+      await deleteOrderItem({
         order_uuid: orderData.uuid,
-        items: updatedItems,
+        item_id: itemToDelete.id,
       }).unwrap();
 
       showToast(t("history.itemDeleted"), "success");
@@ -186,6 +195,72 @@ export default function OrderDetailsScreen() {
       setItemToDelete(null);
     }
   };
+
+  const handleAddItemPress = () => {
+    setShowAddItemModal(true);
+  };
+
+  const handleCancelAddItem = () => {
+    setShowAddItemModal(false);
+    setSelectedCategory(undefined);
+    setSelectedItem(null);
+    setItemQuantity(1);
+  };
+
+  const handleCategoryChange = (category: Category) => {
+    setSelectedCategory(category);
+    setSelectedItem(null);
+    setItemQuantity(1);
+  };
+
+  const handleItemChange = (item: Item) => {
+    setSelectedItem(item);
+    setItemQuantity(1);
+  };
+
+  const handleConfirmAddItem = async () => {
+    if (!selectedItem || !selectedCategory) {
+      showToast(t("history.selectCategoryAndItem"), "error");
+      return;
+    }
+
+    if (itemQuantity > selectedItem.quantity) {
+      showToast(
+        t("history.cannotOrderQuantity", {
+          orderQuantity: itemQuantity,
+          availableQuantity: selectedItem.quantity,
+        }),
+        "error"
+      );
+      return;
+    }
+
+    try {
+      await addOrderItem({
+        order_uuid: orderData.uuid,
+        item_id: selectedItem.id,
+        quantity: itemQuantity,
+      }).unwrap();
+
+      showToast(t("history.itemAdded"), "success");
+      handleCancelAddItem();
+    } catch (error: any) {
+      showToast(error?.data?.message || t("history.itemAddError"), "error");
+    }
+  };
+
+  // Get items for the selected category, filtering out items already in the order
+  const availableItems =
+    selectedCategory && fullOrder
+      ? inventoryData
+          ?.find((cat) => cat.id === selectedCategory.id)
+          ?.items.filter((item) => {
+            // Check if this item is already in the order
+            return !fullOrder.items.some(
+              (orderItem) => orderItem.id === item.id
+            );
+          }) || []
+      : [];
 
   const isReceiptIdChanged = receiptId !== initialReceiptId;
 
@@ -371,9 +446,17 @@ export default function OrderDetailsScreen() {
           </View>
 
           <View style={styles.itemsSection}>
-            <ThemedText style={styles.itemsTitle}>
-              {t("history.items")}
-            </ThemedText>
+            <View style={styles.itemsSectionHeader}>
+              <ThemedText style={styles.itemsTitle}>
+                {t("history.items")}
+              </ThemedText>
+              <TouchableOpacity
+                style={styles.addItemButton}
+                onPress={handleAddItemPress}
+              >
+                <IconSymbol name="plus.circle.fill" size={24} color="#007AFF" />
+              </TouchableOpacity>
+            </View>
 
             {isLoading ? (
               <View style={styles.loadingContainer}>
@@ -533,6 +616,183 @@ export default function OrderDetailsScreen() {
               </View>
             </View>
           </Modal>
+
+          {/* Add Item Modal */}
+          <Modal
+            visible={showAddItemModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={handleCancelAddItem}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.addItemModalContent}>
+                <View style={styles.modalHeader}>
+                  <ThemedText style={styles.addItemModalTitle}>
+                    {t("history.addItem")}
+                  </ThemedText>
+                </View>
+
+                {inventoryLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#007AFF" />
+                    <ThemedText style={styles.loadingText}>
+                      {t("history.loadingInventory")}
+                    </ThemedText>
+                  </View>
+                ) : (
+                  <ScrollView style={styles.addItemModalBody}>
+                    {/* Category Selection */}
+                    <View style={styles.section}>
+                      <ThemedText style={styles.sectionTitle}>
+                        {t("history.selectCategory")}
+                      </ThemedText>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.categoryScroll}
+                      >
+                        {inventoryData?.map((category: Category) => (
+                          <TouchableOpacity
+                            key={category.id}
+                            style={[
+                              styles.categoryOption,
+                              selectedCategory?.id === category.id &&
+                                styles.categoryOptionSelected,
+                            ]}
+                            onPress={() => handleCategoryChange(category)}
+                          >
+                            <ThemedText
+                              style={[
+                                styles.categoryOptionText,
+                                selectedCategory?.id === category.id &&
+                                  styles.categoryOptionTextSelected,
+                              ]}
+                            >
+                              {category.name}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+
+                    {/* Item Selection */}
+                    <View style={styles.section}>
+                      <ThemedText style={styles.sectionTitle}>
+                        {t("history.selectItem")}
+                      </ThemedText>
+                      <ScrollView
+                        style={styles.itemScroll}
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {availableItems.map((item) => (
+                          <TouchableOpacity
+                            key={item.id}
+                            style={[
+                              styles.itemOption,
+                              selectedItem?.id === item.id &&
+                                styles.itemOptionSelected,
+                            ]}
+                            onPress={() => handleItemChange(item)}
+                            disabled={!selectedCategory}
+                          >
+                            <ThemedText
+                              style={[
+                                styles.itemOptionText,
+                                selectedItem?.id === item.id &&
+                                  styles.itemOptionTextSelected,
+                                !selectedCategory && styles.itemOptionDisabled,
+                              ]}
+                            >
+                              {item.name} ({item.quantity} {item.type_of_unit})
+                            </ThemedText>
+                          </TouchableOpacity>
+                        ))}
+                        {!selectedCategory && (
+                          <ThemedText style={styles.disabledText}>
+                            {t("history.selectCategoryFirst")}
+                          </ThemedText>
+                        )}
+                        {selectedCategory && availableItems.length === 0 && (
+                          <ThemedText style={styles.disabledText}>
+                            {t("history.allItemsAdded")}
+                          </ThemedText>
+                        )}
+                      </ScrollView>
+                    </View>
+
+                    {/* Quantity Selection */}
+                    {selectedItem && (
+                      <View style={styles.section}>
+                        <ThemedText style={styles.sectionTitle}>
+                          {t("history.selectQuantity")}
+                        </ThemedText>
+                        <View style={styles.quantityContainer}>
+                          <TouchableOpacity
+                            style={styles.quantityButton}
+                            onPress={() =>
+                              setItemQuantity(Math.max(1, itemQuantity - 1))
+                            }
+                          >
+                            <ThemedText style={styles.quantityButtonText}>
+                              -
+                            </ThemedText>
+                          </TouchableOpacity>
+                          <ThemedText style={styles.quantityValue}>
+                            {itemQuantity}
+                          </ThemedText>
+                          <TouchableOpacity
+                            style={styles.quantityButton}
+                            onPress={() =>
+                              setItemQuantity(
+                                Math.min(
+                                  selectedItem.quantity,
+                                  itemQuantity + 1
+                                )
+                              )
+                            }
+                          >
+                            <ThemedText style={styles.quantityButtonText}>
+                              +
+                            </ThemedText>
+                          </TouchableOpacity>
+                        </View>
+                        <ThemedText style={styles.availableText}>
+                          {t("history.available", {
+                            quantity: selectedItem.quantity,
+                            unit: selectedItem.type_of_unit,
+                          })}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </ScrollView>
+                )}
+
+                <View style={styles.modalFooter}>
+                  <TouchableOpacity
+                    style={styles.cancelModalButton}
+                    onPress={handleCancelAddItem}
+                  >
+                    <ThemedText style={styles.cancelModalButtonText}>
+                      {t("history.cancel")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.addModalButton,
+                      (!selectedItem || !selectedCategory) &&
+                        styles.addModalButtonDisabled,
+                    ]}
+                    onPress={handleConfirmAddItem}
+                    disabled={!selectedItem || !selectedCategory}
+                  >
+                    <ThemedText style={styles.addModalButtonText}>
+                      {t("history.addItemButton")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>
@@ -627,10 +887,18 @@ const styles = StyleSheet.create({
   itemsSection: {
     marginBottom: 20,
   },
+  itemsSectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   itemsTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
+  },
+  addItemButton: {
+    padding: 4,
   },
   loadingContainer: {
     alignItems: "center",
@@ -888,5 +1156,166 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  // Add Item Modal styles
+  addItemModalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    width: "100%",
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E7",
+  },
+  addItemModalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  addItemModalBody: {
+    maxHeight: 500,
+  },
+  section: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 12,
+  },
+  categoryScroll: {
+    flexDirection: "row",
+  },
+  categoryOption: {
+    backgroundColor: "#F8F9FA",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#E5E5E7",
+  },
+  categoryOptionSelected: {
+    backgroundColor: "#007AFF",
+    borderColor: "#007AFF",
+  },
+  categoryOptionText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#666",
+  },
+  categoryOptionTextSelected: {
+    color: "white",
+  },
+  itemScroll: {
+    maxHeight: 200,
+  },
+  itemOption: {
+    backgroundColor: "#F8F9FA",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#E5E5E7",
+  },
+  itemOptionSelected: {
+    backgroundColor: "#007AFF",
+    borderColor: "#007AFF",
+  },
+  itemOptionText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  itemOptionTextSelected: {
+    color: "white",
+  },
+  itemOptionDisabled: {
+    color: "#999",
+  },
+  disabledText: {
+    fontSize: 14,
+    color: "#999",
+    fontStyle: "italic",
+    textAlign: "center",
+    padding: 20,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+    marginBottom: 12,
+  },
+  quantityButton: {
+    backgroundColor: "#007AFF",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  quantityButtonText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "white",
+  },
+  quantityValue: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#333",
+    minWidth: 40,
+    textAlign: "center",
+  },
+  availableText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+  },
+  modalFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5E7",
+    gap: 12,
+  },
+  cancelModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E5E7",
+    alignItems: "center",
+  },
+  cancelModalButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#666",
+  },
+  addModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: "#007AFF",
+    alignItems: "center",
+  },
+  addModalButtonDisabled: {
+    backgroundColor: "#A0A0A0",
+  },
+  addModalButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "white",
   },
 });

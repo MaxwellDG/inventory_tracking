@@ -38,5 +38,18 @@
   "deleteItem": "Delete Item",
   "deleteItemConfirm": "Are you sure you want to remove \"{{itemName}}\" from this order?",
   "itemDeleted": "Item removed from order",
-  "itemDeleteError": "Failed to remove item. Please try again."
+  "itemDeleteError": "Failed to remove item. Please try again.",
+  "addItem": "Add Item to Order",
+  "selectCategory": "Select Category",
+  "selectItem": "Select Item",
+  "selectCategoryFirst": "Please select a category first",
+  "allItemsAdded": "All items in this category have already been added to the order",
+  "selectQuantity": "Select Quantity",
+  "available": "Available: {{quantity}} {{unit}}",
+  "addItemButton": "Add Item",
+  "loadingInventory": "Loading inventory...",
+  "selectCategoryAndItem": "Please select both category and item",
+  "cannotOrderQuantity": "Cannot order {{orderQuantity}} items. Only {{availableQuantity}} available in inventory.",
+  "itemAdded": "Item added to order",
+  "itemAddError": "Failed to add item. Please try again."
 }

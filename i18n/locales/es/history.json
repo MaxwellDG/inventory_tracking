@@ -38,5 +38,18 @@
   "deleteItem": "Eliminar artículo",
   "deleteItemConfirm": "¿Estás seguro de que deseas eliminar \"{{itemName}}\" de este pedido?",
   "itemDeleted": "Artículo eliminado del pedido",
-  "itemDeleteError": "Error al eliminar el artículo. Por favor, inténtalo de nuevo."
+  "itemDeleteError": "Error al eliminar el artículo. Por favor, inténtalo de nuevo.",
+  "addItem": "Añadir artículo al pedido",
+  "selectCategory": "Seleccionar categoría",
+  "selectItem": "Seleccionar artículo",
+  "selectCategoryFirst": "Por favor, selecciona primero una categoría",
+  "allItemsAdded": "Todos los artículos de esta categoría ya han sido añadidos al pedido",
+  "selectQuantity": "Seleccionar cantidad",
+  "available": "Disponible: {{quantity}} {{unit}}",
+  "addItemButton": "Añadir artículo",
+  "loadingInventory": "Cargando inventario...",
+  "selectCategoryAndItem": "Por favor, selecciona categoría y artículo",
+  "cannotOrderQuantity": "No se pueden pedir {{orderQuantity}} artículos. Solo hay {{availableQuantity}} disponibles en el inventario.",
+  "itemAdded": "Artículo añadido al pedido",
+  "itemAddError": "Error al añadir el artículo. Por favor, inténtalo de nuevo."
 }

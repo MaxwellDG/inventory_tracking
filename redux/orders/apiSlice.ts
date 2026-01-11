@@ -97,6 +97,46 @@ export const ordersApi = createApi({
       },
       invalidatesTags: ["orders"],
     }),
+    deleteOrderItem: builder.mutation<
+      Order,
+      { order_uuid: string; item_id: number }
+    >({
+      query({ order_uuid, item_id }) {
+        return {
+          method: "DELETE",
+          url: `${URL_ORDERS}/${order_uuid}/items/${item_id}`,
+        };
+      },
+      invalidatesTags: (result, error, { order_uuid }) => [
+        "orders",
+        { type: "orders", id: order_uuid },
+      ],
+    }),
+    addOrderItem: builder.mutation<
+      Order,
+      { order_uuid: string; item_id: number; quantity: number }
+    >({
+      query({ order_uuid, item_id, quantity }) {
+        return {
+          method: "POST",
+          url: `${URL_ORDERS}/${order_uuid}/items`,
+          body: { item_id, quantity },
+        };
+      },
+      invalidatesTags: (result, error, { order_uuid }) => [
+        "orders",
+        { type: "orders", id: order_uuid },
+      ],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Invalidate inventory cache after adding item to order
+          dispatch(productsApi.util.invalidateTags(["inventory"]));
+        } catch {
+          // Do nothing on error
+        }
+      },
+    }),
   }),
 });
 
@@ -106,4 +146,6 @@ export const {
   useCreateOrderMutation,
   useUpdateOrderMutation,
   useDeleteOrderMutation,
+  useDeleteOrderItemMutation,
+  useAddOrderItemMutation,
 } = ordersApi;

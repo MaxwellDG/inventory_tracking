@@ -1,4 +1,5 @@
 import { save, STORAGE_KEYS } from "@/redux/auth/secureStorage";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,6 +13,8 @@ interface LanguagePickerProps {
 export function LanguagePicker({ variant = "default", onChange }: LanguagePickerProps) {
   const { i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const handleLanguageChange = async (locale: string) => {
     setSelectedLanguage(locale);
@@ -44,8 +47,8 @@ export function LanguagePicker({ variant = "default", onChange }: LanguagePicker
         onValueChange={handleLanguageChange}
         style={[styles.picker, isCompact && styles.pickerCompact]}
       >
-        <Picker.Item label="🇺🇸 English" value="en" color="#000" />
-        <Picker.Item label="🇪🇸 Español" value="es" color="#000" />
+        <Picker.Item label="🇺🇸 English" value="en" />
+        <Picker.Item label="🇪🇸 Español" value="es" />
       </Picker>
     </View>
   );

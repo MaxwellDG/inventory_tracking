@@ -216,7 +216,7 @@ export default function HistoryScreen() {
                   {order.user.name}
                 </ThemedText>
                 <ThemedText style={styles.orderTotal}>
-                  ${order.total.toFixed(2)}
+                  ${order.total}
                 </ThemedText>
               </View>
             </TouchableOpacity>

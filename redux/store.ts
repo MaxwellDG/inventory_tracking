@@ -3,6 +3,7 @@ import { authApi } from "./auth/apiSlice";
 import authReducer from "./auth/slice";
 import { exportApi } from "./export/apiSlice";
 import { feesApi } from "./fees/apiSlice";
+import { labelsApi } from "./labels/apiSlice";
 import { ordersApi } from "./orders/apiSlice";
 import { productsApi } from "./products/apiSlice";
 import { companiesApi } from "./company/apiSlice";
@@ -16,6 +17,7 @@ const rootStore = configureStore({
     [exportApi.reducerPath]: exportApi.reducer,
     [companiesApi.reducerPath]: companiesApi.reducer,
     [feesApi.reducerPath]: feesApi.reducer,
+    [labelsApi.reducerPath]: labelsApi.reducer,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware({
@@ -29,7 +31,8 @@ const rootStore = configureStore({
       .concat(ordersApi.middleware)
       .concat(exportApi.middleware)
       .concat(companiesApi.middleware)
-      .concat(feesApi.middleware);
+      .concat(feesApi.middleware)
+      .concat(labelsApi.middleware);
   },
 });
 
