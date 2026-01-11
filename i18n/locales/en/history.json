@@ -34,5 +34,9 @@
   "deleteOrderConfirm": "Are you sure you want to delete this order? This action cannot be undone.",
   "cancel": "Cancel",
   "restoreInventory": "Restore inventory quantities",
-  "cannotToggleCompleted": "Cannot toggle completed orders"
+  "cannotToggleCompleted": "Cannot toggle completed orders",
+  "deleteItem": "Delete Item",
+  "deleteItemConfirm": "Are you sure you want to remove \"{{itemName}}\" from this order?",
+  "itemDeleted": "Item removed from order",
+  "itemDeleteError": "Failed to remove item. Please try again."
 }

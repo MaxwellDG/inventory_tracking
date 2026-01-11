@@ -55,6 +55,8 @@ export default function OrderDetailsScreen() {
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [restoreInventory, setRestoreInventory] = useState(false);
+  const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
 
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation();
@@ -148,6 +150,41 @@ export default function OrderDetailsScreen() {
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
     setRestoreInventory(false);
+  };
+
+  const handleDeleteItemPress = (item: any) => {
+    setItemToDelete(item);
+    setShowDeleteItemModal(true);
+  };
+
+  const handleCancelDeleteItem = () => {
+    setShowDeleteItemModal(false);
+    setItemToDelete(null);
+  };
+
+  const handleConfirmDeleteItem = async () => {
+    if (!itemToDelete || !fullOrder) return;
+
+    try {
+      // Filter out the item to delete from the order's items
+      const updatedItems = fullOrder.items.filter(
+        (item) => item.id !== itemToDelete.id
+      );
+
+      // Update the order with the new items list
+      await updateOrder({
+        order_uuid: orderData.uuid,
+        items: updatedItems,
+      }).unwrap();
+
+      showToast(t("history.itemDeleted"), "success");
+      setShowDeleteItemModal(false);
+      setItemToDelete(null);
+    } catch (error: any) {
+      showToast(error?.data?.message || t("history.itemDeleteError"), "error");
+      setShowDeleteItemModal(false);
+      setItemToDelete(null);
+    }
   };
 
   const isReceiptIdChanged = receiptId !== initialReceiptId;
@@ -356,11 +393,20 @@ export default function OrderDetailsScreen() {
                 <View key={index} style={styles.itemCard}>
                   <View style={styles.itemHeader}>
                     <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                    {item.price && (
-                      <ThemedText style={styles.itemPrice}>
-                        ${item.price}
-                      </ThemedText>
-                    )}
+                    <View style={styles.itemHeaderRight}>
+                      {item.price && (
+                        <ThemedText style={styles.itemPrice}>
+                          ${item.price}
+                        </ThemedText>
+                      )}
+                      <TouchableOpacity
+                        style={styles.deleteItemButton}
+                        onPress={() => handleDeleteItemPress(item)}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <IconSymbol name="trash" size={18} color="#FF3B30" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                   <View style={styles.itemDetails}>
                     <ThemedText style={styles.itemQuantity}>
@@ -442,6 +488,46 @@ export default function OrderDetailsScreen() {
                         {t("history.delete")}
                       </ThemedText>
                     )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Delete Item Confirmation Modal */}
+          <Modal
+            visible={showDeleteItemModal}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={handleCancelDeleteItem}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <ThemedText style={styles.modalTitle}>
+                  {t("history.deleteItem")}
+                </ThemedText>
+                <ThemedText style={styles.modalMessage}>
+                  {t("history.deleteItemConfirm", {
+                    itemName: itemToDelete?.name || "",
+                  })}
+                </ThemedText>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={handleCancelDeleteItem}
+                  >
+                    <ThemedText style={styles.cancelButtonText}>
+                      {t("history.cancel")}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.deleteButton]}
+                    onPress={handleConfirmDeleteItem}
+                  >
+                    <ThemedText style={styles.deleteButtonText}>
+                      {t("history.delete")}
+                    </ThemedText>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -588,6 +674,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
+  itemHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
   itemName: {
     fontSize: 16,
     fontWeight: "600",
@@ -598,6 +689,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#007AFF",
+  },
+  deleteItemButton: {
+    padding: 4,
   },
   itemDetails: {
     flexDirection: "row",

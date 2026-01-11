@@ -34,5 +34,9 @@
   "deleteOrderConfirm": "¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.",
   "cancel": "Cancelar",
   "restoreInventory": "Restaurar cantidades del inventario",
-  "cannotToggleCompleted": "No se pueden cambiar pedidos completados"
+  "cannotToggleCompleted": "No se pueden cambiar pedidos completados",
+  "deleteItem": "Eliminar artículo",
+  "deleteItemConfirm": "¿Estás seguro de que deseas eliminar \"{{itemName}}\" de este pedido?",
+  "itemDeleted": "Artículo eliminado del pedido",
+  "itemDeleteError": "Error al eliminar el artículo. Por favor, inténtalo de nuevo."
 }
