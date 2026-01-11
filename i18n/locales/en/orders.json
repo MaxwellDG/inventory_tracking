@@ -25,5 +25,8 @@
   "cannotOrderQuantity": "Cannot order {{orderQuantity}} items. Only {{availableQuantity}} available in inventory.",
   "selectBothCategoryAndItem": "Please select both category and item",
   "subtotal": "Subtotal:",
-  "total": "Total:"
+  "total": "Total:",
+  "orderLabel": "Order Label",
+  "orderLabelPlaceholder": "Enter order label...",
+  "labelRequired": "Order label is required"
 }

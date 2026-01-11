@@ -16,6 +16,7 @@ import {
   PanResponder,
   ScrollView,
   StyleSheet,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -29,6 +30,7 @@ export default function OrdersScreen() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [orderQuantity, setOrderQuantity] = useState(1);
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
+  const [orderLabel, setOrderLabel] = useState("");
   const { data: inventoryData, isLoading: inventoryLoading } =
     useGetInventoryQuery();
   const { data: fees = [] } = useGetFeesQuery();
@@ -289,6 +291,22 @@ export default function OrdersScreen() {
         </View>
       </View>
 
+      {/* Order Label Input */}
+      <View style={styles.labelContainer}>
+        <ThemedText style={styles.labelFieldLabel}>
+          {t("orders.orderLabel")}{" "}
+          <ThemedText style={styles.requiredStar}>*</ThemedText>
+        </ThemedText>
+        <TextInput
+          style={styles.labelInput}
+          placeholder={t("orders.orderLabelPlaceholder")}
+          placeholderTextColor="#999"
+          value={orderLabel}
+          onChangeText={setOrderLabel}
+          autoCapitalize="sentences"
+        />
+      </View>
+
       {/* Orders List */}
       <ScrollView
         style={styles.ordersList}
@@ -344,21 +362,28 @@ export default function OrdersScreen() {
           <TouchableOpacity
             style={[
               styles.submitButton,
-              isSubmitting && styles.submitButtonDisabled,
+              (isSubmitting || !orderLabel.trim()) &&
+                styles.submitButtonDisabled,
             ]}
             onPress={async () => {
+              if (!orderLabel.trim()) {
+                showToast(t("orders.labelRequired"), "error");
+                return;
+              }
               try {
                 const orderPayload = {
                   items: pendingItems.map((item) => ({
                     id: item.id,
                     quantity: item.quantity,
                   })),
+                  label: orderLabel.trim(),
                 };
 
                 await createOrder(orderPayload).unwrap();
 
                 showToast(t("orders.orderCreated"), "success");
                 setPendingItems([]); // Clear pending items after submission
+                setOrderLabel(""); // Clear label after submission
               } catch (error: any) {
                 showToast(
                   error?.data?.message || t("orders.orderSubmitError"),
@@ -656,6 +681,30 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: "center",
     alignItems: "center",
+  },
+  // Label input styles
+  labelContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  labelFieldLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
+  },
+  requiredStar: {
+    color: "#FF3B30",
+  },
+  labelInput: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E5E7",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: "#000",
   },
   // Orders list styles
   ordersList: {

@@ -25,5 +25,8 @@
   "cannotOrderQuantity": "No se pueden pedir {{orderQuantity}} artículos. Solo hay {{availableQuantity}} disponibles en el inventario.",
   "selectBothCategoryAndItem": "Por favor, selecciona categoría y artículo",
   "subtotal": "Subtotal:",
-  "total": "Total:"
+  "total": "Total:",
+  "orderLabel": "Etiqueta del pedido",
+  "orderLabelPlaceholder": "Ingrese la etiqueta del pedido...",
+  "labelRequired": "La etiqueta del pedido es obligatoria"
 }

@@ -141,13 +141,21 @@ export default function HistoryScreen() {
               onValueChange={(value) => setSelectedStatus(value)}
               style={styles.statusPicker}
             >
-              <Picker.Item label={t("history.completed")} value="completed" color="#000" />
+              <Picker.Item
+                label={t("history.completed")}
+                value="completed"
+                color="#000"
+              />
               <Picker.Item
                 label={t("history.pendingPayment")}
                 value="pending"
                 color="#000"
               />
-              <Picker.Item label={t("history.open")} value="open" color="#000" />
+              <Picker.Item
+                label={t("history.open")}
+                value="open"
+                color="#000"
+              />
             </Picker>
           </View>
           <View style={styles.dateFilterContainer}>
@@ -200,15 +208,16 @@ export default function HistoryScreen() {
               onPress={() => handleOrderPress(order)}
             >
               <View style={styles.orderHeader}>
-                <ThemedText style={styles.orderId}>
-                  {order.uuid.slice(0, 8)}
+                <ThemedText style={styles.orderLabel}>{order.label}</ThemedText>
+                <IconSymbol name="chevron.right" size={16} color="#666" />
+              </View>
+              <View style={styles.orderDetails}>
+                <ThemedText style={styles.orderUserName}>
+                  {order.user.name}
                 </ThemedText>
-                <View style={styles.orderHeaderRight}>
-                  <ThemedText style={styles.orderTotal}>
-                    ${order.total}
-                  </ThemedText>
-                  <IconSymbol name="chevron.right" size={16} color="#666" />
-                </View>
+                <ThemedText style={styles.orderTotal}>
+                  ${order.total.toFixed(2)}
+                </ThemedText>
               </View>
             </TouchableOpacity>
           ))
@@ -350,11 +359,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 8,
   },
   orderHeaderRight: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  orderLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    flex: 1,
+  },
+  orderDetails: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  orderUserName: {
+    fontSize: 14,
+    color: "#666",
   },
   orderId: {
     fontSize: 16,
@@ -362,9 +387,9 @@ const styles = StyleSheet.create({
     color: "#007AFF",
   },
   orderTotal: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: "#007AFF",
   },
   deleteButton: {
     padding: 8,
