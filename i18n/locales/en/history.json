@@ -51,5 +51,6 @@
   "selectCategoryAndItem": "Please select both category and item",
   "cannotOrderQuantity": "Cannot order {{orderQuantity}} items. Only {{availableQuantity}} available in inventory.",
   "itemAdded": "Item added to order",
-  "itemAddError": "Failed to add item. Please try again."
+  "itemAddError": "Failed to add item. Please try again.",
+  "editItems": "Edit Items"
 }

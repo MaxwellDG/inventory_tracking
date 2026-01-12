@@ -1,3 +1,4 @@
+import { ItemSelectionModal } from "@/components/ItemSelectionModal";
 import { LabelInput } from "@/components/LabelInput";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -5,8 +6,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useToast } from "@/contexts/ToastContext";
 import { useGetFeesQuery } from "@/redux/fees/apiSlice";
 import { useCreateOrderMutation } from "@/redux/orders/apiSlice";
-import { useGetInventoryQuery } from "@/redux/products/apiSlice";
-import { Category, Item } from "@/redux/products/types";
+import { Item } from "@/redux/products/types";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -26,85 +26,26 @@ export default function OrdersScreen() {
   const { showToast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category>();
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [orderQuantity, setOrderQuantity] = useState(1);
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
   const [orderLabel, setOrderLabel] = useState("");
-  const { data: inventoryData, isLoading: inventoryLoading } =
-    useGetInventoryQuery();
   const { data: fees = [] } = useGetFeesQuery();
   const [createOrder, { isLoading: isSubmitting }] = useCreateOrderMutation();
 
-  // Helper functions to work with inventory data
-  const getItemsByCategory = (categoryId: number) => {
-    if (!inventoryData) return [];
-    const category = inventoryData.find((cat) => cat.id === categoryId);
-    return category ? category.items : [];
+  const handleAddItem = (item: Item, quantity: number) => {
+    const newItem: Item = {
+      id: item.id,
+      name: item.name,
+      category_id: item.category_id,
+      quantity: quantity,
+      type_of_unit: item.type_of_unit,
+      price: item.price,
+    };
+
+    setPendingItems([...pendingItems, newItem]);
   };
 
-  const findItem = (itemId: number, categoryId: number) => {
-    if (!inventoryData) return null;
-    const category = inventoryData.find((cat) => cat.id === categoryId);
-    if (!category) return null;
-    return category.items.find((item) => item.id === itemId) || null;
-  };
-
-  // Get items for the selected category, filtering out items already in pending items
-  const categoryItems = selectedCategory
-    ? getItemsByCategory(selectedCategory.id).filter((item) => {
-        // Check if this item is already in pending items
-        return !pendingItems.some(
-          (pendingItem: Item) =>
-            pendingItem.id === item.id &&
-            pendingItem.category_id === selectedCategory.id
-        );
-      })
-    : [];
-
-  const handleCategoryChange = (category: Category) => {
-    setSelectedCategory(category);
-    setSelectedItem(null); // Clear item when category changes
-    setOrderQuantity(1); // Reset quantity when category changes
-  };
-
-  const handleItemChange = (item: Item) => {
-    setSelectedItem(item);
-    setOrderQuantity(1); // Reset quantity when item changes
-  };
-
-  const handleSubmitItem = (item: Item) => {
-    if (selectedCategory && selectedItem) {
-      // Validate quantity doesn't exceed inventory
-      if (orderQuantity > selectedItem.quantity) {
-        Alert.alert(
-          t("orders.error"),
-          t("orders.cannotOrderQuantity", {
-            orderQuantity,
-            availableQuantity: selectedItem.quantity,
-          })
-        );
-        return;
-      }
-
-      const newItem: Item = {
-        id: selectedItem.id,
-        name: selectedItem.name,
-        category_id: selectedCategory.id,
-        quantity: orderQuantity,
-        type_of_unit: selectedItem.type_of_unit,
-        price: selectedItem.price,
-      };
-
-      setPendingItems([...pendingItems, newItem]);
-      setShowModal(false);
-      setSelectedCategory(undefined);
-      setSelectedItem(null);
-      setOrderQuantity(1);
-    } else {
-      Alert.alert(t("orders.error"), t("orders.selectBothCategoryAndItem"));
-    }
-  };
+  // Get IDs of items already in pending to exclude from modal
+  const pendingItemIds = pendingItems.map((item) => item.id);
 
   const handleDeleteItem = (itemId: number) => {
     setPendingItems(pendingItems.filter((item) => item.id !== itemId));
@@ -112,6 +53,7 @@ export default function OrdersScreen() {
 
   const handleClearAllItems = () => {
     setPendingItems([]);
+    setOrderLabel("");
     setShowClearModal(false);
   };
 
@@ -144,14 +86,7 @@ export default function OrdersScreen() {
     setPendingItems((prevItems) =>
       prevItems.map((item: Item) => {
         if (item.id === itemId) {
-          // Find the inventory item to check max quantity
-          const inventoryItem = findItem(item.id, item.category_id);
-          const maxQuantity = inventoryItem?.quantity || 0;
-          const newQuantity = Math.min(maxQuantity, item.quantity + 1);
-
-          if (newQuantity > item.quantity) {
-            return { ...item, quantity: newQuantity };
-          }
+          return { ...item, quantity: item.quantity + 1 };
         }
         return item;
       })
@@ -340,6 +275,26 @@ export default function OrdersScreen() {
         </View>
       )}
 
+      {/* Order Label Input */}
+      {pendingItems.length > 0 && (
+        <View style={styles.labelContainer}>
+          <ThemedText style={styles.labelFieldLabel}>
+            {t("orders.orderLabel")}{" "}
+            <ThemedText style={styles.requiredStar}>*</ThemedText>
+          </ThemedText>
+          <LabelInput
+            labelId={null}
+            labelName={orderLabel}
+            onLabelChange={(id, name) => {
+              setOrderLabel(name);
+            }}
+            placeholder={t("orders.orderLabelPlaceholder")}
+            placeholderTextColor="#999"
+            autoCapitalize="sentences"
+          />
+        </View>
+      )}
+
       {/* Submit Button */}
       {pendingItems.length > 0 && (
         <View style={styles.submitContainer}>
@@ -381,215 +336,21 @@ export default function OrdersScreen() {
               <ActivityIndicator size="small" color="white" />
             ) : (
               <ThemedText style={styles.submitButtonText}>
-                {t("orders.submitWithCount", { count: pendingItems.length })}
+                {t("orders.submit")}
               </ThemedText>
             )}
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Modal */}
-      <Modal
+      {/* Item Selection Modal */}
+      <ItemSelectionModal
         visible={showModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <ThemedText style={styles.modalTitle}>
-                {t("orders.addToOrder")}
-              </ThemedText>
-            </View>
-
-            {inventoryLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
-                <ThemedText style={styles.loadingText}>
-                  {t("orders.loadingInventory")}
-                </ThemedText>
-              </View>
-            ) : (
-              <ScrollView style={styles.modalBody}>
-                {/* Order Label Input */}
-                <View style={styles.section}>
-                  <ThemedText style={styles.sectionTitle}>
-                    {t("orders.orderLabel")}{" "}
-                  </ThemedText>
-                  <LabelInput
-                    labelId={null}
-                    labelName={orderLabel}
-                    onLabelChange={(id, name) => {
-                      setOrderLabel(name);
-                    }}
-                    placeholder={t("orders.orderLabelPlaceholder")}
-                    placeholderTextColor="#999"
-                    autoCapitalize="sentences"
-                  />
-                </View>
-
-                {/* Category Selection */}
-                <View style={styles.section}>
-                  <ThemedText style={styles.sectionTitle}>
-                    {t("orders.selectCategory")}
-                  </ThemedText>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoryScroll}
-                  >
-                    {inventoryData?.map((category: Category) => (
-                      <TouchableOpacity
-                        key={category.id}
-                        style={[
-                          styles.categoryOption,
-                          selectedCategory?.id === category.id &&
-                            styles.categoryOptionSelected,
-                        ]}
-                        onPress={() => handleCategoryChange(category)}
-                      >
-                        <ThemedText
-                          style={[
-                            styles.categoryOptionText,
-                            selectedCategory?.id === category.id &&
-                              styles.categoryOptionTextSelected,
-                          ]}
-                        >
-                          {category.name}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-
-                {/* Item Selection */}
-                <View style={styles.section}>
-                  <ThemedText style={styles.sectionTitle}>
-                    {t("orders.selectItem")}
-                  </ThemedText>
-                  <ScrollView
-                    style={styles.itemScroll}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {categoryItems.map((item) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={[
-                          styles.itemOption,
-                          selectedItem?.id === item.id &&
-                            styles.itemOptionSelected,
-                        ]}
-                        onPress={() => handleItemChange(item)}
-                        disabled={!selectedCategory}
-                      >
-                        <ThemedText
-                          style={[
-                            styles.itemOptionText,
-                            selectedItem?.id === item.id &&
-                              styles.itemOptionTextSelected,
-                            !selectedCategory && styles.itemOptionDisabled,
-                          ]}
-                        >
-                          {item.name} ({item.quantity} {item.type_of_unit})
-                        </ThemedText>
-                      </TouchableOpacity>
-                    ))}
-                    {!selectedCategory && (
-                      <ThemedText style={styles.disabledText}>
-                        {t("orders.selectCategoryFirst")}
-                      </ThemedText>
-                    )}
-                    {selectedCategory && categoryItems.length === 0 && (
-                      <ThemedText style={styles.disabledText}>
-                        {t("orders.allItemsAdded")}
-                      </ThemedText>
-                    )}
-                  </ScrollView>
-                </View>
-
-                {/* Quantity Selection */}
-                {selectedItem && (
-                  <View style={[styles.section, { borderBottomWidth: 0 }]}>
-                    <ThemedText style={styles.sectionTitle}>
-                      {t("orders.selectQuantity")}
-                    </ThemedText>
-                    <View style={styles.quantityContainer}>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() =>
-                          setOrderQuantity(Math.max(1, orderQuantity - 1))
-                        }
-                      >
-                        <ThemedText style={styles.quantityButtonText}>
-                          -
-                        </ThemedText>
-                      </TouchableOpacity>
-                      <View style={styles.quantityDisplay}>
-                        <ThemedText style={styles.quantityText}>
-                          {orderQuantity}
-                        </ThemedText>
-                      </View>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => {
-                          const maxQuantity = selectedItem.quantity || 0;
-                          setOrderQuantity(
-                            Math.min(maxQuantity, orderQuantity + 1)
-                          );
-                        }}
-                      >
-                        <ThemedText style={styles.quantityButtonText}>
-                          +
-                        </ThemedText>
-                      </TouchableOpacity>
-                    </View>
-                    <ThemedText style={styles.quantityInfo}>
-                      {t("orders.available", {
-                        quantity: selectedItem.quantity,
-                        unit: selectedItem.type_of_unit,
-                      })}
-                    </ThemedText>
-                  </View>
-                )}
-              </ScrollView>
-            )}
-
-            {/* Modal Footer */}
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowModal(false)}
-              >
-                <ThemedText style={styles.cancelButtonText}>
-                  {t("orders.cancel")}
-                </ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.createButton,
-                  (!selectedCategory || !selectedItem || !orderLabel.trim()) &&
-                    styles.createButtonDisabled,
-                ]}
-                onPress={() => {
-                  if (!orderLabel.trim()) {
-                    showToast(t("orders.labelRequired"), "error");
-                    return;
-                  }
-                  handleSubmitItem(selectedItem as Item);
-                }}
-                disabled={
-                  !selectedCategory || !selectedItem || !orderLabel.trim()
-                }
-              >
-                <ThemedText style={styles.createButtonText}>
-                  {t("orders.submitItem")}
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowModal(false)}
+        onSubmit={handleAddItem}
+        title={t("orders.addToOrder")}
+        excludeItemIds={pendingItemIds}
+      />
 
       {/* Clear Confirmation Modal */}
       <Modal
@@ -694,6 +455,16 @@ const styles = StyleSheet.create({
   // Label input styles
   requiredStar: {
     color: "#FF3B30",
+  },
+  labelContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  labelFieldLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
   },
   // Orders list styles
   ordersList: {
@@ -1037,6 +808,7 @@ const styles = StyleSheet.create({
     color: "#666",
     lineHeight: 22,
     textAlign: "center",
+    marginVertical: 16,
   },
   clearModalButtons: {
     flexDirection: "row",

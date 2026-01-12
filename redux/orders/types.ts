@@ -1,5 +1,4 @@
 import { Fee } from "../fees/types";
-import { Item } from "../products/types";
 
 export const ORDER_STATUS = {
   completed: "completed",
@@ -16,7 +15,7 @@ export type User = {
 export type Order = {
   uuid: string;
   user_id: number;
-  items: Item[];
+  items: OrderItemDetail[];
   total: number;
   subtotal: number;
   status: keyof typeof ORDER_STATUS;
@@ -30,7 +29,7 @@ export type Order = {
 export type GetOrderResponse = {
   uuid: string;
   user_id: number;
-  items: Item[];
+  items: OrderItemDetail[];
   total: number;
   subtotal: number;
   status: keyof typeof ORDER_STATUS;
@@ -70,6 +69,19 @@ export type OrderItem = {
   quantity: number;
 };
 
+export type OrderItemDetail = {
+  order_item_id: number;
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: number;
+  image: string | null;
+  quantity: number;
+  unit_price: number;
+  type_of_unit?: string;
+};
+
 export type CreateOrderRequest = {
   items: OrderItem[];
   label: string;
@@ -77,7 +89,7 @@ export type CreateOrderRequest = {
 
 export type UpdateOrderRequest = {
   order_uuid: string;
-  items?: Item[];
+  items?: OrderItemDetail[];
   receipt_id?: string;
   status?: keyof typeof ORDER_STATUS;
 };

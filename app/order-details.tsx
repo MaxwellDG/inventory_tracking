@@ -1,3 +1,4 @@
+import { ItemSelectionModal } from "@/components/ItemSelectionModal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -12,11 +13,8 @@ import {
   useUpdateOrderMutation,
 } from "@/redux/orders/apiSlice";
 import { OrderListItem } from "@/redux/orders/types";
-import {
-  useGetInventoryQuery,
-  useUpdateItemQuantityMutation,
-} from "@/redux/products/apiSlice";
-import { Category, Item } from "@/redux/products/types";
+import { useUpdateItemQuantityMutation } from "@/redux/products/apiSlice";
+import { Item } from "@/redux/products/types";
 import { RootState } from "@/redux/store";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -64,17 +62,13 @@ export default function OrderDetailsScreen() {
   const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category>();
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [itemQuantity, setItemQuantity] = useState(1);
+  const [showEditItemsModal, setShowEditItemsModal] = useState(false);
 
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation();
   const [deleteOrderItem] = useDeleteOrderItemMutation();
   const [addOrderItem] = useAddOrderItemMutation();
   const [updateItemQuantity] = useUpdateItemQuantityMutation();
-  const { data: inventoryData, isLoading: inventoryLoading } =
-    useGetInventoryQuery();
 
   // Set initial receipt ID and delivery status when order loads
   useEffect(() => {
@@ -179,56 +173,33 @@ export default function OrderDetailsScreen() {
   const handleConfirmDeleteItem = async () => {
     if (!itemToDelete || !fullOrder) return;
 
+    console.log("Deleting item:", itemToDelete);
+    console.log("order_item_id:", itemToDelete.order_item_id);
+
     try {
       // Use the new delete item endpoint
       await deleteOrderItem({
         order_uuid: orderData.uuid,
-        item_id: itemToDelete.id,
+        order_item_id: itemToDelete.order_item_id,
       }).unwrap();
 
       showToast(t("history.itemDeleted"), "success");
       setShowDeleteItemModal(false);
       setItemToDelete(null);
     } catch (error: any) {
+      console.error("Error deleting item:", error);
       showToast(error?.data?.message || t("history.itemDeleteError"), "error");
       setShowDeleteItemModal(false);
       setItemToDelete(null);
     }
   };
 
-  const handleAddItemPress = () => {
-    setShowAddItemModal(true);
-  };
-
-  const handleCancelAddItem = () => {
-    setShowAddItemModal(false);
-    setSelectedCategory(undefined);
-    setSelectedItem(null);
-    setItemQuantity(1);
-  };
-
-  const handleCategoryChange = (category: Category) => {
-    setSelectedCategory(category);
-    setSelectedItem(null);
-    setItemQuantity(1);
-  };
-
-  const handleItemChange = (item: Item) => {
-    setSelectedItem(item);
-    setItemQuantity(1);
-  };
-
-  const handleConfirmAddItem = async () => {
-    if (!selectedItem || !selectedCategory) {
-      showToast(t("history.selectCategoryAndItem"), "error");
-      return;
-    }
-
-    if (itemQuantity > selectedItem.quantity) {
+  const handleAddItem = async (item: Item, quantity: number) => {
+    if (quantity > item.quantity) {
       showToast(
         t("history.cannotOrderQuantity", {
-          orderQuantity: itemQuantity,
-          availableQuantity: selectedItem.quantity,
+          orderQuantity: quantity,
+          availableQuantity: item.quantity,
         }),
         "error"
       );
@@ -238,29 +209,18 @@ export default function OrderDetailsScreen() {
     try {
       await addOrderItem({
         order_uuid: orderData.uuid,
-        item_id: selectedItem.id,
-        quantity: itemQuantity,
+        item_id: item.id,
+        quantity: quantity,
       }).unwrap();
 
       showToast(t("history.itemAdded"), "success");
-      handleCancelAddItem();
     } catch (error: any) {
       showToast(error?.data?.message || t("history.itemAddError"), "error");
     }
   };
 
-  // Get items for the selected category, filtering out items already in the order
-  const availableItems =
-    selectedCategory && fullOrder
-      ? inventoryData
-          ?.find((cat) => cat.id === selectedCategory.id)
-          ?.items.filter((item) => {
-            // Check if this item is already in the order
-            return !fullOrder.items.some(
-              (orderItem) => orderItem.id === item.id
-            );
-          }) || []
-      : [];
+  // Get items already in the order to exclude from selection
+  const orderItemIds = fullOrder?.items?.map((item) => item.id) || [];
 
   const isReceiptIdChanged = receiptId !== initialReceiptId;
 
@@ -450,13 +410,31 @@ export default function OrderDetailsScreen() {
               <ThemedText style={styles.itemsTitle}>
                 {t("history.items")}
               </ThemedText>
-              <TouchableOpacity
-                style={styles.addItemButton}
-                onPress={handleAddItemPress}
-              >
-                <IconSymbol name="plus.circle.fill" size={24} color="#007AFF" />
-              </TouchableOpacity>
+              {fullOrder?.status === "open" && (
+                <TouchableOpacity
+                  style={styles.addItemButton}
+                  onPress={() => setShowAddItemModal(true)}
+                >
+                  <IconSymbol
+                    name="plus.circle.fill"
+                    size={24}
+                    color="#007AFF"
+                  />
+                </TouchableOpacity>
+              )}
             </View>
+
+            {/* Edit Items Button */}
+            {fullOrder?.status === "open" && (
+              <TouchableOpacity
+                style={styles.editItemsButton}
+                onPress={() => setShowEditItemsModal(true)}
+              >
+                <ThemedText style={styles.editItemsButtonText}>
+                  {t("history.editItems")}
+                </ThemedText>
+              </TouchableOpacity>
+            )}
 
             {isLoading ? (
               <View style={styles.loadingContainer}>
@@ -476,12 +454,7 @@ export default function OrderDetailsScreen() {
                 <View key={index} style={styles.itemCard}>
                   <View style={styles.itemHeader}>
                     <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                    <View style={styles.itemHeaderRight}>
-                      {item.price && (
-                        <ThemedText style={styles.itemPrice}>
-                          ${item.price}
-                        </ThemedText>
-                      )}
+                    {fullOrder.status === "open" && (
                       <TouchableOpacity
                         style={styles.deleteItemButton}
                         onPress={() => handleDeleteItemPress(item)}
@@ -489,13 +462,18 @@ export default function OrderDetailsScreen() {
                       >
                         <IconSymbol name="trash" size={18} color="#FF3B30" />
                       </TouchableOpacity>
-                    </View>
+                    )}
                   </View>
                   <View style={styles.itemDetails}>
                     <ThemedText style={styles.itemQuantity}>
                       {t("history.quantity")}: {item.quantity}{" "}
                       {item.type_of_unit}
                     </ThemedText>
+                    {item.price && (
+                      <ThemedText style={styles.itemPrice}>
+                        ${item.price}
+                      </ThemedText>
+                    )}
                   </View>
                 </View>
               ))
@@ -617,182 +595,24 @@ export default function OrderDetailsScreen() {
             </View>
           </Modal>
 
-          {/* Add Item Modal */}
-          <Modal
+          {/* Item Selection Modals */}
+          <ItemSelectionModal
             visible={showAddItemModal}
-            animationType="slide"
-            transparent={true}
-            onRequestClose={handleCancelAddItem}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.addItemModalContent}>
-                <View style={styles.modalHeader}>
-                  <ThemedText style={styles.addItemModalTitle}>
-                    {t("history.addItem")}
-                  </ThemedText>
-                </View>
+            onClose={() => setShowAddItemModal(false)}
+            onSubmit={handleAddItem}
+            title={t("history.addItem")}
+            excludeItemIds={orderItemIds}
+            canAddExistingItems={true}
+          />
 
-                {inventoryLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#007AFF" />
-                    <ThemedText style={styles.loadingText}>
-                      {t("history.loadingInventory")}
-                    </ThemedText>
-                  </View>
-                ) : (
-                  <ScrollView style={styles.addItemModalBody}>
-                    {/* Category Selection */}
-                    <View style={styles.section}>
-                      <ThemedText style={styles.sectionTitle}>
-                        {t("history.selectCategory")}
-                      </ThemedText>
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.categoryScroll}
-                      >
-                        {inventoryData?.map((category: Category) => (
-                          <TouchableOpacity
-                            key={category.id}
-                            style={[
-                              styles.categoryOption,
-                              selectedCategory?.id === category.id &&
-                                styles.categoryOptionSelected,
-                            ]}
-                            onPress={() => handleCategoryChange(category)}
-                          >
-                            <ThemedText
-                              style={[
-                                styles.categoryOptionText,
-                                selectedCategory?.id === category.id &&
-                                  styles.categoryOptionTextSelected,
-                              ]}
-                            >
-                              {category.name}
-                            </ThemedText>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-
-                    {/* Item Selection */}
-                    <View style={styles.section}>
-                      <ThemedText style={styles.sectionTitle}>
-                        {t("history.selectItem")}
-                      </ThemedText>
-                      <ScrollView
-                        style={styles.itemScroll}
-                        showsVerticalScrollIndicator={false}
-                      >
-                        {availableItems.map((item) => (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={[
-                              styles.itemOption,
-                              selectedItem?.id === item.id &&
-                                styles.itemOptionSelected,
-                            ]}
-                            onPress={() => handleItemChange(item)}
-                            disabled={!selectedCategory}
-                          >
-                            <ThemedText
-                              style={[
-                                styles.itemOptionText,
-                                selectedItem?.id === item.id &&
-                                  styles.itemOptionTextSelected,
-                                !selectedCategory && styles.itemOptionDisabled,
-                              ]}
-                            >
-                              {item.name} ({item.quantity} {item.type_of_unit})
-                            </ThemedText>
-                          </TouchableOpacity>
-                        ))}
-                        {!selectedCategory && (
-                          <ThemedText style={styles.disabledText}>
-                            {t("history.selectCategoryFirst")}
-                          </ThemedText>
-                        )}
-                        {selectedCategory && availableItems.length === 0 && (
-                          <ThemedText style={styles.disabledText}>
-                            {t("history.allItemsAdded")}
-                          </ThemedText>
-                        )}
-                      </ScrollView>
-                    </View>
-
-                    {/* Quantity Selection */}
-                    {selectedItem && (
-                      <View style={styles.section}>
-                        <ThemedText style={styles.sectionTitle}>
-                          {t("history.selectQuantity")}
-                        </ThemedText>
-                        <View style={styles.quantityContainer}>
-                          <TouchableOpacity
-                            style={styles.quantityButton}
-                            onPress={() =>
-                              setItemQuantity(Math.max(1, itemQuantity - 1))
-                            }
-                          >
-                            <ThemedText style={styles.quantityButtonText}>
-                              -
-                            </ThemedText>
-                          </TouchableOpacity>
-                          <ThemedText style={styles.quantityValue}>
-                            {itemQuantity}
-                          </ThemedText>
-                          <TouchableOpacity
-                            style={styles.quantityButton}
-                            onPress={() =>
-                              setItemQuantity(
-                                Math.min(
-                                  selectedItem.quantity,
-                                  itemQuantity + 1
-                                )
-                              )
-                            }
-                          >
-                            <ThemedText style={styles.quantityButtonText}>
-                              +
-                            </ThemedText>
-                          </TouchableOpacity>
-                        </View>
-                        <ThemedText style={styles.availableText}>
-                          {t("history.available", {
-                            quantity: selectedItem.quantity,
-                            unit: selectedItem.type_of_unit,
-                          })}
-                        </ThemedText>
-                      </View>
-                    )}
-                  </ScrollView>
-                )}
-
-                <View style={styles.modalFooter}>
-                  <TouchableOpacity
-                    style={styles.cancelModalButton}
-                    onPress={handleCancelAddItem}
-                  >
-                    <ThemedText style={styles.cancelModalButtonText}>
-                      {t("history.cancel")}
-                    </ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.addModalButton,
-                      (!selectedItem || !selectedCategory) &&
-                        styles.addModalButtonDisabled,
-                    ]}
-                    onPress={handleConfirmAddItem}
-                    disabled={!selectedItem || !selectedCategory}
-                  >
-                    <ThemedText style={styles.addModalButtonText}>
-                      {t("history.addItemButton")}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
+          <ItemSelectionModal
+            visible={showEditItemsModal}
+            onClose={() => setShowEditItemsModal(false)}
+            onSubmit={handleAddItem}
+            title={t("orders.addToOrder")}
+            excludeItemIds={orderItemIds}
+            canAddExistingItems={true}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>
@@ -1070,6 +890,23 @@ const styles = StyleSheet.create({
   statusPicker: {
     backgroundColor: "#F8F9FA",
     borderRadius: 8,
+  },
+  editItemsButton: {
+    backgroundColor: "#007AFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  editItemsButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFFFF",
   },
   deleteSection: {
     backgroundColor: "#FFFFFF",
