@@ -19,12 +19,14 @@ import {
   View,
 } from "react-native";
 import { useDispatch } from "react-redux";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const { showError } = useApiError();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
 
@@ -133,16 +135,28 @@ export default function LoginScreen() {
               <ThemedText style={styles.label}>
                 {t("login.passwordLabel")}
               </ThemedText>
-              <TextInput
-                style={styles.input}
-                placeholder={t("login.passwordPlaceholder")}
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              <View style={styles.passwordInputContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder={t("login.passwordPlaceholder")}
+                  placeholderTextColor="#999"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={24}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* <TouchableOpacity
@@ -241,6 +255,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "#F8F9FA",
     color: "#000",
+  },
+  passwordInputContainer: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: "#E1E5E9",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingRight: 50,
+    fontSize: 16,
+    backgroundColor: "#F8F9FA",
+    color: "#000",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 16,
+    top: "50%",
+    transform: [{ translateY: -12 }],
   },
   forgotPassword: {
     alignSelf: "flex-end",
