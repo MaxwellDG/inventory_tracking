@@ -1,5 +1,6 @@
 {
   "title": "Unirse a una empresa",
+  "subtitle": "El ID de la empresa se encuentra en la parte superior de la pantalla \"Configuración\"",
   "placeholder": "Introduce el número de ID de la empresa",
   "continue": "Continuar",
   "error": "Error",

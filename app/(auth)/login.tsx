@@ -149,6 +149,9 @@ export default function LoginScreen() {
                 <TouchableOpacity
                   style={styles.eyeIcon}
                   onPress={() => setShowPassword(!showPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  activeOpacity={0.6}
+                  pointerEvents="box-only"
                 >
                   <Ionicons
                     name={showPassword ? "eye-off-outline" : "eye-outline"}

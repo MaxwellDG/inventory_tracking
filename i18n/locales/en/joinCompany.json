@@ -1,5 +1,6 @@
 {
   "title": "Join a company",
+  "subtitle": "The company ID can be found at the top of the \"Settings\" screen",
   "placeholder": "Enter company ID number",
   "continue": "Continue",
   "error": "Error",

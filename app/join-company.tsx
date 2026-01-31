@@ -53,6 +53,9 @@ export default function JoinCompanyScreen() {
           <ThemedText type="title" style={styles.title}>
             {t("joinCompany.title")}
           </ThemedText>
+          <ThemedText style={styles.subtitle}>
+            {t("joinCompany.subtitle")}
+          </ThemedText>
 
           <TextInput
             style={styles.input}
@@ -98,9 +101,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: 8,
     paddingHorizontal: 20,
     lineHeight: 32,
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#666",
+    marginBottom: 30,
+    paddingHorizontal: 20,
   },
   input: {
     width: "100%",

@@ -1,9 +1,9 @@
 import { save, STORAGE_KEYS } from "@/redux/auth/secureStorage";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
+import { ThemedPicker } from "./ThemedPicker";
 
 interface LanguagePickerProps {
   variant?: "default" | "compact";
@@ -42,14 +42,15 @@ export function LanguagePicker({ variant = "default", onChange }: LanguagePicker
       {isCompact && (
         <Text style={styles.flagOverlay}>{getFlag(selectedLanguage)}</Text>
       )}
-      <Picker
+      <ThemedPicker
         selectedValue={selectedLanguage}
         onValueChange={handleLanguageChange}
         style={[styles.picker, isCompact && styles.pickerCompact]}
+        containerStyle={isCompact ? styles.pickerContainerCompactInner : undefined}
       >
-        <Picker.Item label="🇺🇸 English" value="en" />
-        <Picker.Item label="🇪🇸 Español" value="es" />
-      </Picker>
+        <ThemedPicker.Item label="🇺🇸 English" value="en" color="#000" />
+        <ThemedPicker.Item label="🇪🇸 Español" value="es" color="#000" />
+      </ThemedPicker>
     </View>
   );
 }
@@ -86,6 +87,10 @@ const styles = StyleSheet.create({
     height: 40,
     width: 80,
     opacity: 0,
+  },
+  pickerContainerCompactInner: {
+    backgroundColor: "transparent",
+    borderRadius: 0,
   },
   flagOverlay: {
     position: "absolute",

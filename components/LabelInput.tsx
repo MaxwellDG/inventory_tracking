@@ -1,5 +1,4 @@
 import { useGetLabelsQuery } from "@/redux/labels/apiSlice";
-import { Picker } from "@react-native-picker/picker";
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ThemedPicker } from "./ThemedPicker";
 import { IconSymbol } from "./ui/icon-symbol";
 
 type LabelInputProps = {
@@ -66,22 +66,23 @@ export function LabelInput({
         autoCapitalize={autoCapitalize}
       />
       <View style={styles.pickerWrapper}>
-        <Picker
+        <ThemedPicker
           ref={pickerRef}
           selectedValue={labelId?.toString() || ""}
           onValueChange={handlePickerChange}
           style={styles.picker}
-          dropdownIconColor="#007AFF"
+          containerStyle={styles.pickerContainer}
         >
-          <Picker.Item label={t("orders.selectLabel")} value="" />
+          <ThemedPicker.Item label={t("orders.selectLabel")} value="" color="#000" />
           {labelsData.map((label) => (
-            <Picker.Item
+            <ThemedPicker.Item
               key={label.id}
               label={label.name}
               value={label.id.toString()}
+              color="#000"
             />
           ))}
-        </Picker>
+        </ThemedPicker>
         {Platform.OS === "android" && (
           <TouchableOpacity
             style={styles.pickerButton}
@@ -122,10 +123,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     position: "relative",
   },
+  pickerContainer: {
+    backgroundColor: "transparent",
+    borderRadius: 0,
+  },
   picker: {
     width: 50,
     height: 50,
     color: "transparent",
+    backgroundColor: "transparent",
   },
   pickerButton: {
     position: "absolute",

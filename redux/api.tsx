@@ -3,8 +3,15 @@ import { Platform } from "react-native";
 import { RootState } from "./store";
 
 export const baseQuery = (auth: boolean = false, path: string = "") => {
-  const appEnv = process.env.EXPO_PUBLIC_APP_ENV;
-  let apiUrl = process.env.EXPO_PUBLIC_API_URL || "";
+  const appEnv = process.env.EXPO_PUBLIC_APP_ENV || "prod";
+  let apiUrl = process.env.EXPO_PUBLIC_API_URL || "https://www.inventory-tracking.com";
+
+  console.log("API Configuration:", {
+    appEnv,
+    apiUrl,
+    platform: Platform.OS,
+    hasEnvVar: !!process.env.EXPO_PUBLIC_API_URL
+  });
 
   if (appEnv === "local") {
     // different emulator OS accesses localhost in different ways

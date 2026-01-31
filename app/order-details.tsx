@@ -12,7 +12,7 @@ import {
   useGetOrderQuery,
   useUpdateOrderMutation,
 } from "@/redux/orders/apiSlice";
-import { OrderListItem } from "@/redux/orders/types";
+import { OrderItemDetail, OrderListItem } from "@/redux/orders/types";
 import { useUpdateItemQuantityMutation } from "@/redux/products/apiSlice";
 import { Item } from "@/redux/products/types";
 import { RootState } from "@/redux/store";
@@ -60,7 +60,7 @@ export default function OrderDetailsScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [restoreInventory, setRestoreInventory] = useState(true);
   const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [itemToDelete, setItemToDelete] = useState<OrderItemDetail | null>(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showEditItemsModal, setShowEditItemsModal] = useState(false);
 
@@ -133,12 +133,12 @@ export default function OrderDetailsScreen() {
         for (const orderItem of fullOrder.items) {
           try {
             await updateItemQuantity({
-              id: orderItem.id,
+              id: orderItem.item.id,
               quantity: orderItem.quantity,
             }).unwrap();
           } catch (error) {
             console.error(
-              `Failed to restore inventory for item ${orderItem.id}:`,
+              `Failed to restore inventory for item ${orderItem.item.id}:`,
               error
             );
           }
@@ -160,7 +160,7 @@ export default function OrderDetailsScreen() {
     setRestoreInventory(false);
   };
 
-  const handleDeleteItemPress = (item: any) => {
+  const handleDeleteItemPress = (item: OrderItemDetail) => {
     setItemToDelete(item);
     setShowDeleteItemModal(true);
   };
@@ -172,9 +172,6 @@ export default function OrderDetailsScreen() {
 
   const handleConfirmDeleteItem = async () => {
     if (!itemToDelete || !fullOrder) return;
-
-    console.log("Deleting item:", itemToDelete);
-    console.log("order_item_id:", itemToDelete.order_item_id);
 
     try {
       // Use the new delete item endpoint
@@ -220,7 +217,7 @@ export default function OrderDetailsScreen() {
   };
 
   // Get items already in the order to exclude from selection
-  const orderItemIds = fullOrder?.items?.map((item) => item.id) || [];
+  const orderItemIds = fullOrder?.items?.map((item) => item.item.id) || [];
 
   const isReceiptIdChanged = receiptId !== initialReceiptId;
 
@@ -399,8 +396,7 @@ export default function OrderDetailsScreen() {
                 {t("history.createdAt")}:
               </ThemedText>
               <ThemedText style={styles.summaryValue}>
-                {new Date(orderData.created_at).toLocaleDateString()} at{" "}
-                {new Date(orderData.created_at).toLocaleTimeString()}
+                {`${new Date(orderData.created_at).toLocaleDateString()} at ${new Date(orderData.created_at).toLocaleTimeString()}`}
               </ThemedText>
             </View>
           </View>
@@ -450,14 +446,16 @@ export default function OrderDetailsScreen() {
                 </ThemedText>
               </View>
             ) : fullOrder?.items && fullOrder.items.length > 0 ? (
-              fullOrder.items.map((item, index) => (
+              fullOrder.items.map((orderItem, index) => (
                 <View key={index} style={styles.itemCard}>
                   <View style={styles.itemHeader}>
-                    <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+                    <ThemedText style={styles.itemName}>
+                      {orderItem.item.name}
+                    </ThemedText>
                     {fullOrder.status === "open" && (
                       <TouchableOpacity
                         style={styles.deleteItemButton}
-                        onPress={() => handleDeleteItemPress(item)}
+                        onPress={() => handleDeleteItemPress(orderItem)}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         <IconSymbol name="trash" size={18} color="#FF3B30" />
@@ -466,12 +464,11 @@ export default function OrderDetailsScreen() {
                   </View>
                   <View style={styles.itemDetails}>
                     <ThemedText style={styles.itemQuantity}>
-                      {t("history.quantity")}: {item.quantity}{" "}
-                      {item.type_of_unit}
+                      {`${t("history.quantity")}: ${orderItem.quantity} ${orderItem.item.type_of_unit}`}
                     </ThemedText>
-                    {item.price && (
+                    {!!orderItem.price && (
                       <ThemedText style={styles.itemPrice}>
-                        ${item.price}
+                        ${orderItem.price}
                       </ThemedText>
                     )}
                   </View>
@@ -569,7 +566,7 @@ export default function OrderDetailsScreen() {
                 </ThemedText>
                 <ThemedText style={styles.modalMessage}>
                   {t("history.deleteItemConfirm", {
-                    itemName: itemToDelete?.name || "",
+                    itemName: itemToDelete?.item.name || "",
                   })}
                 </ThemedText>
 

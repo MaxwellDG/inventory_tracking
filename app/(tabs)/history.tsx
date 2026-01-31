@@ -1,11 +1,11 @@
 import { Paginator } from "@/components/Paginator";
+import { ThemedPicker } from "@/components/ThemedPicker";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useGetOrdersQuery } from "@/redux/orders/apiSlice";
 import { ORDER_STATUS } from "@/redux/orders/types";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,21 +17,25 @@ import {
   View,
 } from "react-native";
 
-// Set startDate to yesterday at 00:00:00
-const yesterday = new Date();
-yesterday.setDate(yesterday.getDate() - 1);
-yesterday.setHours(0, 0, 0, 0);
+const getYesterday = () => {
+  const date = new Date();
+  date.setDate(date.getDate() - 1);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
 
-// Set endDate to today at 23:59:59
-const today = new Date();
-today.setHours(23, 59, 59, 999);
+const getToday = () => {
+  const date = new Date();
+  date.setHours(23, 59, 59, 999);
+  return date;
+};
 
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [startDate, setStartDate] = useState<Date | null>(yesterday);
-  const [endDate, setEndDate] = useState<Date | null>(today);
+  const [startDate, setStartDate] = useState<Date | null>(() => getYesterday());
+  const [endDate, setEndDate] = useState<Date | null>(() => getToday());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [selectedStatus, setSelectedStatus] =
@@ -136,27 +140,27 @@ export default function HistoryScreen() {
         </View>
         <View style={styles.filterRow}>
           <View style={styles.statusFilterContainer}>
-            <Picker
+            <ThemedPicker
               selectedValue={selectedStatus}
               onValueChange={(value) => setSelectedStatus(value)}
               style={styles.statusPicker}
             >
-              <Picker.Item
+              <ThemedPicker.Item
                 label={t("history.completed")}
                 value="completed"
                 color="#000"
               />
-              <Picker.Item
+              <ThemedPicker.Item
                 label={t("history.pendingPayment")}
                 value="pending"
                 color="#000"
               />
-              <Picker.Item
+              <ThemedPicker.Item
                 label={t("history.open")}
                 value="open"
                 color="#000"
               />
-            </Picker>
+            </ThemedPicker>
           </View>
           <View style={styles.dateFilterContainer}>
             <TouchableOpacity
@@ -301,9 +305,6 @@ const styles = StyleSheet.create({
   },
   statusPicker: {
     height: 60,
-    backgroundColor: "#F0F0F0",
-    borderRadius: 8,
-    paddingHorizontal: 8,
   },
   dateFilterContainer: {
     flexDirection: "row",

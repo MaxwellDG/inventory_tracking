@@ -79,8 +79,6 @@ export default function UpdateScreen() {
 
   // Delete item dropdown state
   const [showDeleteItem, setShowDeleteItem] = useState(false);
-  const [selectedDeleteItemCategory, setSelectedDeleteItemCategory] =
-    useState("");
   const [deleteItemName, setDeleteItemName] = useState("");
 
   // Edit item dropdown state
@@ -89,6 +87,7 @@ export default function UpdateScreen() {
   const [selectedEditItem, setSelectedEditItem] = useState("");
   const [editItemName, setEditItemName] = useState("");
   const [editItemPrice, setEditItemPrice] = useState("");
+  const [editItemUnit, setEditItemUnit] = useState("");
 
   // Label dropdown state
   const [showAddLabel, setShowAddLabel] = useState(false);
@@ -111,11 +110,8 @@ export default function UpdateScreen() {
         ?.items || []
     : [];
 
-  // Get items for the selected delete category
-  const deleteCategoryItems = selectedDeleteItemCategory
-    ? inventoryData.find((cat) => cat.name === selectedDeleteItemCategory)
-        ?.items || []
-    : [];
+  // Get all items across all categories for delete functionality
+  const allItems = inventoryData.flatMap((cat) => cat.items);
 
   const handleAddCategory = async () => {
     if (newCategoryName.trim()) {
@@ -145,12 +141,12 @@ export default function UpdateScreen() {
     ) {
       try {
         const categoryId = inventoryData.find(
-          (cat) => cat.name === selectedCategory
+          (cat) => cat.name === selectedCategory,
         )?.id;
         if (!categoryId) {
           Alert.alert(
             t("inventoryEdit.error"),
-            t("inventoryEdit.selectedCategoryNotFound")
+            t("inventoryEdit.selectedCategoryNotFound"),
           );
           return;
         }
@@ -159,7 +155,7 @@ export default function UpdateScreen() {
           name: newItemName.trim(),
           quantity: parseInt(newItemQuantity) || 0,
           type_of_unit: newItemUnit.trim(),
-          ...(newItemPrice.trim() && { price: parseFloat(newItemPrice) }),
+          price: newItemPrice.trim() ? parseFloat(newItemPrice) : 0,
           category_id: categoryId,
         }).unwrap();
 
@@ -179,7 +175,7 @@ export default function UpdateScreen() {
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.fillAllRequiredFields")
+        t("inventoryEdit.fillAllRequiredFields"),
       );
     }
   };
@@ -187,7 +183,8 @@ export default function UpdateScreen() {
   const handleDeleteCategory = async () => {
     if (deleteCategoryName.trim()) {
       const categoryToDelete = inventoryData.find(
-        (cat) => cat.name === deleteCategoryName.trim()
+        (cat) =>
+          cat.name.toLowerCase() === deleteCategoryName.trim().toLowerCase(),
       );
       if (categoryToDelete) {
         try {
@@ -206,13 +203,13 @@ export default function UpdateScreen() {
           t("inventoryEdit.error"),
           t("inventoryEdit.categoryNotFound", {
             name: deleteCategoryName.trim(),
-          })
+          }),
         );
       }
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.enterCategoryNameToDelete")
+        t("inventoryEdit.enterCategoryNameToDelete"),
       );
     }
   };
@@ -220,17 +217,18 @@ export default function UpdateScreen() {
   const handleEditCategory = async () => {
     if (selectedEditCategory && editCategoryName.trim()) {
       const categoryToEdit = inventoryData.find(
-        (cat) => cat.name === selectedEditCategory
+        (cat) => cat.name === selectedEditCategory,
       );
       if (categoryToEdit) {
         const nameExists = inventoryData.some(
           (cat) =>
-            cat.name === editCategoryName.trim() && cat.id !== categoryToEdit.id
+            cat.name === editCategoryName.trim() &&
+            cat.id !== categoryToEdit.id,
         );
         if (nameExists) {
           Alert.alert(
             t("inventoryEdit.error"),
-            t("inventoryEdit.categoryNameExists")
+            t("inventoryEdit.categoryNameExists"),
           );
           return;
         }
@@ -254,7 +252,7 @@ export default function UpdateScreen() {
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.selectCategoryAndEnterName")
+        t("inventoryEdit.selectCategoryAndEnterName"),
       );
     }
   };
@@ -262,22 +260,22 @@ export default function UpdateScreen() {
   const handleEditItem = async () => {
     if (selectedEditItemCategory && selectedEditItem && editItemName.trim()) {
       const category = inventoryData.find(
-        (cat) => cat.name === selectedEditItemCategory
+        (cat) => cat.name === selectedEditItemCategory,
       );
       const itemToEdit = category?.items.find(
-        (item) => item.name === selectedEditItem
+        (item) => item.name === selectedEditItem,
       );
 
       if (itemToEdit) {
         const allItems = inventoryData.flatMap((cat) => cat.items);
         const nameExists = allItems.some(
           (item) =>
-            item.name === editItemName.trim() && item.id !== itemToEdit.id
+            item.name === editItemName.trim() && item.id !== itemToEdit.id,
         );
         if (nameExists) {
           Alert.alert(
             t("inventoryEdit.error"),
-            t("inventoryEdit.itemNameExists")
+            t("inventoryEdit.itemNameExists"),
           );
           return;
         }
@@ -287,11 +285,13 @@ export default function UpdateScreen() {
             ...itemToEdit,
             name: editItemName.trim(),
             price: editItemPrice.trim() ? parseFloat(editItemPrice) : undefined,
+            type_of_unit: editItemUnit.trim(),
           }).unwrap();
           setSelectedEditItemCategory("");
           setSelectedEditItem("");
           setEditItemName("");
           setEditItemPrice("");
+          setEditItemUnit("");
           setShowEditItem(false);
           showToast(t("inventoryEdit.itemUpdated"), "success");
         } catch (error) {
@@ -304,21 +304,21 @@ export default function UpdateScreen() {
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.selectCategoryItemAndEnterName")
+        t("inventoryEdit.selectCategoryItemAndEnterName"),
       );
     }
   };
 
   const handleDeleteItem = async () => {
-    if (selectedDeleteItemCategory && deleteItemName.trim()) {
-      const itemToDelete = deleteCategoryItems.find(
-        (item) => item.name === deleteItemName.trim()
+    if (deleteItemName.trim()) {
+      const itemToDelete = allItems.find(
+        (item) =>
+          item.name.toLowerCase() === deleteItemName.trim().toLowerCase(),
       );
       if (itemToDelete) {
         try {
           await deleteItem(itemToDelete.id).unwrap();
           setDeleteItemName("");
-          setSelectedDeleteItemCategory("");
           setShowDeleteItem(false);
           showToast(t("inventoryEdit.itemDeleted"), "success");
         } catch (error) {
@@ -330,13 +330,13 @@ export default function UpdateScreen() {
       } else {
         Alert.alert(
           t("inventoryEdit.error"),
-          t("inventoryEdit.itemNotFound", { name: deleteItemName.trim() })
+          t("inventoryEdit.itemNotFound", { name: deleteItemName.trim() }),
         );
       }
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.enterItemNameToDelete")
+        t("inventoryEdit.enterItemNameToDelete"),
       );
     }
   };
@@ -362,17 +362,17 @@ export default function UpdateScreen() {
   const handleEditLabel = async () => {
     if (selectedEditLabel && editLabelName.trim()) {
       const labelToEdit = labelsData.find(
-        (label) => label.name === selectedEditLabel
+        (label) => label.name === selectedEditLabel,
       );
       if (labelToEdit) {
         const nameExists = labelsData.some(
           (label) =>
-            label.name === editLabelName.trim() && label.id !== labelToEdit.id
+            label.name === editLabelName.trim() && label.id !== labelToEdit.id,
         );
         if (nameExists) {
           Alert.alert(
             t("inventoryEdit.error"),
-            t("inventoryEdit.labelNameExists")
+            t("inventoryEdit.labelNameExists"),
           );
           return;
         }
@@ -396,7 +396,7 @@ export default function UpdateScreen() {
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.selectLabelAndEnterName")
+        t("inventoryEdit.selectLabelAndEnterName"),
       );
     }
   };
@@ -404,7 +404,8 @@ export default function UpdateScreen() {
   const handleDeleteLabel = async () => {
     if (deleteLabelName.trim()) {
       const labelToDelete = labelsData.find(
-        (label) => label.name === deleteLabelName.trim()
+        (label) =>
+          label.name.toLowerCase() === deleteLabelName.trim().toLowerCase(),
       );
       if (labelToDelete) {
         try {
@@ -423,16 +424,26 @@ export default function UpdateScreen() {
           t("inventoryEdit.error"),
           t("inventoryEdit.labelNotFound", {
             name: deleteLabelName.trim(),
-          })
+          }),
         );
       }
     } else {
       Alert.alert(
         t("inventoryEdit.error"),
-        t("inventoryEdit.enterLabelNameToDelete")
+        t("inventoryEdit.enterLabelNameToDelete"),
       );
     }
   };
+
+  // Determine if we should show glow animation for empty categories
+  const shouldGlowCategory = !isLoading && inventoryData.length === 0;
+
+  // Determine if we should show glow animation for empty items
+  const totalItems = inventoryData.reduce(
+    (sum, cat) => sum + cat.items.length,
+    0,
+  );
+  const shouldGlowItems = !isLoading && inventoryData.length > 0 && totalItems === 0;
 
   // Category dropdown items
   const categoryDropdownItems: DropdownItem[] = [
@@ -440,6 +451,7 @@ export default function UpdateScreen() {
       title: t("inventoryEdit.addNewCategory"),
       isOpen: showAddCategory,
       onToggle: () => setShowAddCategory(!showAddCategory),
+      shouldGlow: shouldGlowCategory,
       renderContent: () => (
         <>
           <TextInput
@@ -495,7 +507,10 @@ export default function UpdateScreen() {
                     selectedEditCategory === category.name &&
                       styles.categoryOptionSelected,
                   ]}
-                  onPress={() => setSelectedEditCategory(category.name)}
+                  onPress={() => {
+                    setSelectedEditCategory(category.name);
+                    setEditCategoryName(category.name);
+                  }}
                 >
                   <ThemedText
                     style={[
@@ -584,6 +599,7 @@ export default function UpdateScreen() {
         }
         setShowAddItem(!showAddItem);
       },
+      shouldGlow: shouldGlowItems,
       renderContent: () => (
         <>
           <TextInput
@@ -690,6 +706,7 @@ export default function UpdateScreen() {
           setSelectedEditItem("");
           setEditItemName("");
           setEditItemPrice("");
+          setEditItemUnit("");
         }
         setShowEditItem(!showEditItem);
       },
@@ -706,6 +723,7 @@ export default function UpdateScreen() {
                       setSelectedEditItem("");
                       setEditItemName("");
                       setEditItemPrice("");
+                      setEditItemUnit("");
                     },
                     showCloseIcon: true,
                   },
@@ -717,6 +735,7 @@ export default function UpdateScreen() {
                             setSelectedEditItem("");
                             setEditItemName("");
                             setEditItemPrice("");
+                            setEditItemUnit("");
                           },
                           showCloseIcon: true,
                         },
@@ -746,6 +765,7 @@ export default function UpdateScreen() {
                       setSelectedEditItem("");
                       setEditItemName("");
                       setEditItemPrice("");
+                      setEditItemUnit("");
                     }}
                   >
                     <ThemedText style={styles.categoryOptionText}>
@@ -775,6 +795,7 @@ export default function UpdateScreen() {
                       setSelectedEditItem(item.name);
                       setEditItemName(item.name);
                       setEditItemPrice(item.price?.toString() || "");
+                      setEditItemUnit(item.type_of_unit || "");
                     }}
                   >
                     <ThemedText style={styles.itemOptionText}>
@@ -806,13 +827,23 @@ export default function UpdateScreen() {
                 keyboardType="numeric"
               />
 
+              <TextInput
+                style={styles.input}
+                placeholder={t("inventoryEdit.enterNewUnit")}
+                placeholderTextColor="#999"
+                value={editItemUnit}
+                onChangeText={setEditItemUnit}
+                autoCapitalize="words"
+              />
+
               <TouchableOpacity
                 style={[
                   styles.addButton,
-                  !editItemName.trim() && styles.addButtonDisabled,
+                  (!editItemName.trim() || !editItemUnit.trim()) &&
+                    styles.addButtonDisabled,
                 ]}
                 onPress={handleEditItem}
-                disabled={!editItemName.trim()}
+                disabled={!editItemName.trim() || !editItemUnit.trim()}
               >
                 <ThemedText style={styles.addButtonText}>
                   {t("inventoryEdit.updateItem")}
@@ -828,84 +859,34 @@ export default function UpdateScreen() {
       isOpen: showDeleteItem,
       onToggle: () => {
         if (showDeleteItem) {
-          setSelectedDeleteItemCategory("");
           setDeleteItemName("");
         }
         setShowDeleteItem(!showDeleteItem);
       },
       renderContent: () => (
         <>
-          {selectedDeleteItemCategory && (
-            <View style={styles.breadcrumbContainer}>
-              <Breadcrumb
-                items={[
-                  {
-                    label: selectedDeleteItemCategory,
-                    onPress: () => {
-                      setSelectedDeleteItemCategory("");
-                      setDeleteItemName("");
-                    },
-                    showCloseIcon: true,
-                  },
-                ]}
-              />
-            </View>
-          )}
+          <TextInput
+            style={styles.input}
+            placeholder={t("inventoryEdit.enterExactItemName")}
+            placeholderTextColor="#999"
+            value={deleteItemName}
+            onChangeText={setDeleteItemName}
+            autoCapitalize="words"
+          />
 
-          {!selectedDeleteItemCategory && (
-            <View style={styles.categorySelector}>
-              <ThemedText style={styles.selectorLabel}>
-                {t("inventoryEdit.selectCategory")}
-              </ThemedText>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.categoryScroll}
-              >
-                {inventoryData.map((category) => (
-                  <TouchableOpacity
-                    key={category.id}
-                    style={styles.categoryOption}
-                    onPress={() => {
-                      setSelectedDeleteItemCategory(category.name);
-                      setDeleteItemName("");
-                    }}
-                  >
-                    <ThemedText style={styles.categoryOptionText}>
-                      {category.name}
-                    </ThemedText>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {selectedDeleteItemCategory && (
-            <>
-              <TextInput
-                style={styles.input}
-                placeholder={t("inventoryEdit.enterExactItemName")}
-                placeholderTextColor="#999"
-                value={deleteItemName}
-                onChangeText={setDeleteItemName}
-                autoCapitalize="words"
-              />
-
-              <TouchableOpacity
-                style={[
-                  styles.deleteButton,
-                  !deleteItemName.trim() && styles.deleteButtonDisabled,
-                ]}
-                onPress={handleDeleteItem}
-                disabled={!deleteItemName.trim()}
-              >
-                <IconSymbol name="trash" size={16} color="white" />
-                <ThemedText style={styles.deleteButtonText}>
-                  {t("inventoryEdit.deleteItem")}
-                </ThemedText>
-              </TouchableOpacity>
-            </>
-          )}
+          <TouchableOpacity
+            style={[
+              styles.deleteButton,
+              !deleteItemName.trim() && styles.deleteButtonDisabled,
+            ]}
+            onPress={handleDeleteItem}
+            disabled={!deleteItemName.trim()}
+          >
+            <IconSymbol name="trash" size={16} color="white" />
+            <ThemedText style={styles.deleteButtonText}>
+              {t("inventoryEdit.deleteItem")}
+            </ThemedText>
+          </TouchableOpacity>
         </>
       ),
     },
@@ -1075,6 +1056,7 @@ export default function UpdateScreen() {
               onToggleExpanded={() =>
                 setIsCategorySectionExpanded(!isCategorySectionExpanded)
               }
+              shouldGlow={shouldGlowCategory}
             />
 
             {/* Item Section - Only show if at least one category exists */}
@@ -1086,6 +1068,7 @@ export default function UpdateScreen() {
                 onToggleExpanded={() =>
                   setIsItemsSectionExpanded(!isItemsSectionExpanded)
                 }
+                shouldGlow={shouldGlowItems}
               />
             )}
 

@@ -136,29 +136,34 @@ export function ItemSelectionModal({
                   style={styles.itemScroll}
                   showsVerticalScrollIndicator={false}
                 >
-                  {availableItems.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[
-                        styles.itemOption,
-                        selectedItem?.id === item.id &&
-                          styles.itemOptionSelected,
-                      ]}
-                      onPress={() => handleItemChange(item)}
-                      disabled={!selectedCategory}
-                    >
-                      <ThemedText
+                  {availableItems.map((item) => {
+                    const isOutOfStock = item.quantity === 0;
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
                         style={[
-                          styles.itemOptionText,
+                          styles.itemOption,
                           selectedItem?.id === item.id &&
-                            styles.itemOptionTextSelected,
-                          !selectedCategory && styles.itemOptionDisabled,
+                            styles.itemOptionSelected,
+                          isOutOfStock && styles.itemOptionOutOfStock,
                         ]}
+                        onPress={() => handleItemChange(item)}
+                        disabled={!selectedCategory || isOutOfStock}
                       >
-                        {item.name} ({item.quantity} {item.type_of_unit})
-                      </ThemedText>
-                    </TouchableOpacity>
-                  ))}
+                        <ThemedText
+                          style={[
+                            styles.itemOptionText,
+                            selectedItem?.id === item.id &&
+                              styles.itemOptionTextSelected,
+                            (!selectedCategory || isOutOfStock) &&
+                              styles.itemOptionDisabled,
+                          ]}
+                        >
+                          {`${item.name} (${item.quantity} ${item.type_of_unit})`}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    );
+                  })}
                   {!selectedCategory && (
                     <ThemedText style={styles.disabledText}>
                       {t("history.selectCategoryFirst")}
@@ -329,6 +334,9 @@ const styles = StyleSheet.create({
   itemOptionSelected: {
     backgroundColor: "#007AFF",
     borderColor: "#007AFF",
+  },
+  itemOptionOutOfStock: {
+    opacity: 0.5,
   },
   itemOptionText: {
     fontSize: 14,

@@ -1,4 +1,5 @@
 import { Fee } from "../fees/types";
+import { Item } from "../products/types";
 
 export const ORDER_STATUS = {
   completed: "completed",
@@ -71,15 +72,10 @@ export type OrderItem = {
 
 export type OrderItemDetail = {
   order_item_id: number;
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: number;
-  image: string | null;
   quantity: number;
-  unit_price: number;
-  type_of_unit?: string;
+  unit_price: string;
+  price: string;
+  item: Item;
 };
 
 export type CreateOrderRequest = {
