@@ -27,6 +27,7 @@ export default function OrdersScreen() {
   const [showModal, setShowModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
+  const [itemStockLimits, setItemStockLimits] = useState<Record<number, number>>({});
   const [orderLabel, setOrderLabel] = useState("");
   const { data: fees = [] } = useGetFeesQuery();
   const [createOrder, { isLoading: isSubmitting }] = useCreateOrderMutation();
@@ -41,6 +42,7 @@ export default function OrdersScreen() {
       price: item.price,
     };
 
+    setItemStockLimits((prev) => ({ ...prev, [item.id]: item.quantity }));
     setPendingItems([...pendingItems, newItem]);
   };
 
@@ -53,6 +55,7 @@ export default function OrdersScreen() {
 
   const handleClearAllItems = () => {
     setPendingItems([]);
+    setItemStockLimits({});
     setOrderLabel("");
     setShowClearModal(false);
   };
@@ -86,7 +89,8 @@ export default function OrdersScreen() {
     setPendingItems((prevItems) =>
       prevItems.map((item: Item) => {
         if (item.id === itemId) {
-          return { ...item, quantity: item.quantity + 1 };
+          const max = itemStockLimits[itemId] ?? Infinity;
+          return { ...item, quantity: Math.min(item.quantity + 1, max) };
         }
         return item;
       })
@@ -173,23 +177,21 @@ export default function OrdersScreen() {
             <ThemedText style={styles.orderItemName}>{item.name}</ThemedText>
             <View style={styles.orderQuantityControls}>
               <TouchableOpacity
-                style={styles.orderQuantityButton}
+                style={[styles.orderQuantityButton, item.quantity <= 1 && styles.orderQuantityButtonDisabled]}
                 onPress={() => handleDecreaseQuantity(item.id)}
+                disabled={item.quantity <= 1}
               >
-                <ThemedText style={styles.orderQuantityButtonText}>
-                  -
-                </ThemedText>
+                <ThemedText style={styles.orderQuantityButtonText}>-</ThemedText>
               </TouchableOpacity>
               <ThemedText style={styles.orderQuantityText}>
                 {item.quantity}
               </ThemedText>
               <TouchableOpacity
-                style={styles.orderQuantityButton}
+                style={[styles.orderQuantityButton, item.quantity >= (itemStockLimits[item.id] ?? Infinity) && styles.orderQuantityButtonDisabled]}
                 onPress={() => handleIncreaseQuantity(item.id)}
+                disabled={item.quantity >= (itemStockLimits[item.id] ?? Infinity)}
               >
-                <ThemedText style={styles.orderQuantityButtonText}>
-                  +
-                </ThemedText>
+                <ThemedText style={styles.orderQuantityButtonText}>+</ThemedText>
               </TouchableOpacity>
             </View>
           </View>
@@ -552,6 +554,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
+  },
+  orderQuantityButtonDisabled: {
+    backgroundColor: "#C7C7CC",
   },
   orderQuantityButtonText: {
     fontSize: 16,
