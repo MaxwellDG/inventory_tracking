@@ -15,6 +15,7 @@ type LabelInputProps = {
   labelId: number | null;
   labelName: string;
   onLabelChange: (id: number | null, name: string) => void;
+  onClear?: () => void;
   placeholder?: string;
   placeholderTextColor?: string;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
@@ -25,6 +26,7 @@ export function LabelInput({
   labelId,
   labelName,
   onLabelChange,
+  onClear,
   placeholder,
   placeholderTextColor,
   autoCapitalize,
@@ -57,14 +59,21 @@ export function LabelInput({
 
   return (
     <View style={styles.labelInputContainer}>
-      <TextInput
-        style={[styles.labelTextInput, style]}
-        placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
-        value={labelName}
-        onChangeText={handleTextChange}
-        autoCapitalize={autoCapitalize}
-      />
+      <View style={styles.textInputWrapper}>
+        <TextInput
+          style={[styles.labelTextInput, onClear && labelName.length > 0 && styles.labelTextInputWithClear, style]}
+          placeholder={placeholder}
+          placeholderTextColor={placeholderTextColor}
+          value={labelName}
+          onChangeText={handleTextChange}
+          autoCapitalize={autoCapitalize}
+        />
+        {onClear && labelName.length > 0 && (
+          <TouchableOpacity style={styles.clearButton} onPress={onClear}>
+            <IconSymbol name="xmark" size={16} color="#999" />
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.pickerWrapper}>
         <ThemedPicker
           ref={pickerRef}
@@ -103,15 +112,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  labelTextInput: {
+  textInputWrapper: {
     flex: 1,
+    position: "relative",
+    justifyContent: "center",
+  },
+  labelTextInput: {
     backgroundColor: "white",
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 0,
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#E5E5E7",
     height: 50,
+  },
+  labelTextInputWithClear: {
+    paddingRight: 40,
+  },
+  clearButton: {
+    position: "absolute",
+    right: 12,
+    padding: 4,
   },
   pickerWrapper: {
     width: 50,

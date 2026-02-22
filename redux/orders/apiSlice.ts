@@ -38,6 +38,9 @@ export const ordersApi = createApi({
         if (params.status !== undefined) {
           queryParams.append("status", params.status);
         }
+        if (params.label !== undefined && params.label !== "") {
+          queryParams.append("label", params.label);
+        }
         const queryString = queryParams.toString();
 
         return {

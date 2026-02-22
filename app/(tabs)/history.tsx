@@ -1,3 +1,4 @@
+import { LabelInput } from "@/components/LabelInput";
 import { Paginator } from "@/components/Paginator";
 import { ThemedPicker } from "@/components/ThemedPicker";
 import { ThemedText } from "@/components/themed-text";
@@ -10,6 +11,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -36,11 +38,18 @@ export default function HistoryScreen() {
 
   const [startDate, setStartDate] = useState<Date | null>(() => getYesterday());
   const [endDate, setEndDate] = useState<Date | null>(() => getToday());
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [labelFilter, setLabelFilter] = useState("");
   const [selectedStatus, setSelectedStatus] =
     useState<keyof typeof ORDER_STATUS>("open");
   const [pageNumber, setPageNumber] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Draft state — edited inside the modal, committed on close
+  const [draftStartDate, setDraftStartDate] = useState<Date | null>(() => getYesterday());
+  const [draftEndDate, setDraftEndDate] = useState<Date | null>(() => getToday());
+  const [draftLabelFilter, setDraftLabelFilter] = useState("");
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const {
     data: ordersResponse,
@@ -53,6 +62,7 @@ export default function HistoryScreen() {
       startDate: startDate?.toISOString().split("T")[0],
       endDate: endDate?.toISOString().split("T")[0],
       status: selectedStatus,
+      label: labelFilter || undefined,
     },
     { pollingInterval: 10000 }
   );
@@ -88,6 +98,20 @@ export default function HistoryScreen() {
     });
   };
 
+  const openFilters = () => {
+    setDraftStartDate(startDate);
+    setDraftEndDate(endDate);
+    setDraftLabelFilter(labelFilter);
+    setShowFilters(true);
+  };
+
+  const closeFilters = () => {
+    setStartDate(draftStartDate);
+    setEndDate(draftEndDate);
+    setLabelFilter(draftLabelFilter);
+    setShowFilters(false);
+  };
+
   const handleStartDatePress = () => {
     setShowStartDatePicker(true);
   };
@@ -102,13 +126,11 @@ export default function HistoryScreen() {
       const dateWithTime = new Date(selectedDate);
       dateWithTime.setHours(0, 0, 0, 0);
 
-      // Only update if the selected date is not after the end date
-      if (endDate && dateWithTime > endDate) {
-        // Don't update if start date is after end date
+      if (draftEndDate && dateWithTime > draftEndDate) {
         return;
       }
 
-      setStartDate(dateWithTime);
+      setDraftStartDate(dateWithTime);
     }
   };
 
@@ -118,14 +140,21 @@ export default function HistoryScreen() {
       const dateWithTime = new Date(selectedDate);
       dateWithTime.setHours(23, 59, 59, 999);
 
-      // Only update if the selected date is not before the start date
-      if (startDate && dateWithTime < startDate) {
-        // Don't update if end date is before start date
+      if (draftStartDate && dateWithTime < draftStartDate) {
         return;
       }
 
-      setEndDate(dateWithTime);
+      setDraftEndDate(dateWithTime);
     }
+  };
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return "—";
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   return (
@@ -137,46 +166,35 @@ export default function HistoryScreen() {
               {t("history.title")}
             </ThemedText>
           </View>
+          <TouchableOpacity
+            style={styles.filtersButton}
+            onPress={openFilters}
+          >
+            <ThemedText style={styles.filtersButtonText}>Filters</ThemedText>
+          </TouchableOpacity>
         </View>
-        <View style={styles.filterRow}>
-          <View style={styles.statusFilterContainer}>
-            <ThemedPicker
-              selectedValue={selectedStatus}
-              onValueChange={(value) => setSelectedStatus(value)}
-              style={styles.statusPicker}
-            >
-              <ThemedPicker.Item
-                label={t("history.completed")}
-                value="completed"
-                color="#000"
-              />
-              <ThemedPicker.Item
-                label={t("history.pendingPayment")}
-                value="pending"
-                color="#000"
-              />
-              <ThemedPicker.Item
-                label={t("history.open")}
-                value="open"
-                color="#000"
-              />
-            </ThemedPicker>
-          </View>
-          <View style={styles.dateFilterContainer}>
-            <TouchableOpacity
-              style={styles.dateFilterButton}
-              onPress={handleStartDatePress}
-            >
-              <IconSymbol name="calendar" size={20} color="#007AFF" />
-            </TouchableOpacity>
-            <ThemedText style={styles.dash}>—</ThemedText>
-            <TouchableOpacity
-              style={styles.dateFilterButton}
-              onPress={handleEndDatePress}
-            >
-              <IconSymbol name="calendar" size={20} color="#007AFF" />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.statusFilterContainer}>
+          <ThemedPicker
+            selectedValue={selectedStatus}
+            onValueChange={(value) => setSelectedStatus(value)}
+            style={styles.statusPicker}
+          >
+            <ThemedPicker.Item
+              label={t("history.completed")}
+              value="completed"
+              color="#000"
+            />
+            <ThemedPicker.Item
+              label={t("history.pendingPayment")}
+              value="pending"
+              color="#000"
+            />
+            <ThemedPicker.Item
+              label={t("history.open")}
+              value="open"
+              color="#000"
+            />
+          </ThemedPicker>
         </View>
       </View>
 
@@ -199,13 +217,11 @@ export default function HistoryScreen() {
         ) : orders.length === 0 ? (
           <View style={styles.emptyState}>
             <ThemedText style={styles.emptyStateText}>
-              {orders.length === 0
-                ? t("history.noOrdersFound")
-                : t("history.noOrdersForDateRange")}
+              {t("history.noOrdersFound")}
             </ThemedText>
           </View>
         ) : (
-          orders.map((order, index) => (
+          orders.map((order) => (
             <TouchableOpacity
               key={order.uuid}
               style={styles.orderCard}
@@ -237,30 +253,90 @@ export default function HistoryScreen() {
         />
       )}
 
-      {showStartDatePicker && (
-        <DateTimePicker
-          value={startDate || new Date()}
-          mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={onStartDateChange}
-          maximumDate={
-            endDate
-              ? new Date(Math.min(endDate.getTime(), new Date().getTime()))
-              : new Date()
-          }
-        />
-      )}
+      {/* Filters Modal */}
+      <Modal
+        visible={showFilters}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={closeFilters}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <ThemedText style={styles.modalTitle}>Filters</ThemedText>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={closeFilters}
+            >
+              <IconSymbol name="xmark" size={18} color="#333" />
+            </TouchableOpacity>
+          </View>
 
-      {showEndDatePicker && (
-        <DateTimePicker
-          value={endDate || new Date()}
-          mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={onEndDateChange}
-          minimumDate={startDate || undefined}
-          maximumDate={new Date()}
-        />
-      )}
+          <View style={styles.modalContent}>
+            <View style={styles.filterSection}>
+              <ThemedText style={styles.filterLabel}>Date Range</ThemedText>
+              <View style={styles.dateFilterRow}>
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={handleStartDatePress}
+                >
+                  <IconSymbol name="calendar" size={16} color="#007AFF" />
+                  <ThemedText style={styles.dateButtonText}>
+                    {formatDate(draftStartDate)}
+                  </ThemedText>
+                </TouchableOpacity>
+                <ThemedText style={styles.dash}>—</ThemedText>
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={handleEndDatePress}
+                >
+                  <IconSymbol name="calendar" size={16} color="#007AFF" />
+                  <ThemedText style={styles.dateButtonText}>
+                    {formatDate(draftEndDate)}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.filterSection}>
+              <ThemedText style={styles.filterLabel}>Label</ThemedText>
+              <LabelInput
+                labelId={null}
+                labelName={draftLabelFilter}
+                onLabelChange={(_id, name) => setDraftLabelFilter(name)}
+                onClear={() => setDraftLabelFilter("")}
+                placeholder={t("orders.orderLabelPlaceholder")}
+                placeholderTextColor="#999"
+                autoCapitalize="sentences"
+              />
+            </View>
+          </View>
+        </View>
+
+        {showStartDatePicker && (
+          <DateTimePicker
+            value={draftStartDate || new Date()}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={onStartDateChange}
+            maximumDate={
+              draftEndDate
+                ? new Date(Math.min(draftEndDate.getTime(), new Date().getTime()))
+                : new Date()
+            }
+          />
+        )}
+
+        {showEndDatePicker && (
+          <DateTimePicker
+            value={draftEndDate || new Date()}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={onEndDateChange}
+            minimumDate={draftStartDate || undefined}
+            maximumDate={new Date()}
+          />
+        )}
+      </Modal>
     </ThemedView>
   );
 }
@@ -280,12 +356,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  filterRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 16,
-  },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -295,39 +365,16 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
-  statusFilterContainer: {
-    flex: 1,
-    marginRight: 16,
-    padding: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingVertical: 0,
+  filtersButton: {
+    backgroundColor: "#007AFF",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  statusPicker: {
-    height: 60,
-  },
-  dateFilterContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  dateFilterButton: {
-    backgroundColor: "#F0F0F0",
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  dash: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#666",
+  filtersButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
   },
   ordersList: {
     flex: 1,
@@ -395,5 +442,75 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 8,
     borderRadius: 8,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#F8F9FA",
+    paddingTop: 60,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  modalCloseButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E5E5EA",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    paddingHorizontal: 20,
+    gap: 24,
+  },
+  filterSection: {
+    gap: 8,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+  },
+  statusFilterContainer: {
+    marginTop: 12,
+  },
+  statusPicker: {
+    height: 60,
+  },
+  dateFilterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  dateButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E5E7",
+    paddingHorizontal: 14,
+    height: 50,
+  },
+  dateButtonText: {
+    fontSize: 15,
+    color: "#333",
+  },
+  dash: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#666",
   },
 });
