@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "../api";
+import { labelsApi } from "../labels/apiSlice";
 import { productsApi } from "../products/apiSlice";
 import { PaginationFilters } from "../types";
 import { API_SLICE_NAME, URL_ORDERS } from "./const";
@@ -70,8 +71,8 @@ export const ordersApi = createApi({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
-          // Invalidate inventory cache after successful order creation
           dispatch(productsApi.util.invalidateTags(["inventory"]));
+          dispatch(labelsApi.util.invalidateTags(["labels"]));
         } catch {
           // Do nothing on error
         }

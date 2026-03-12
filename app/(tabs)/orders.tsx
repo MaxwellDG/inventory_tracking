@@ -1,5 +1,5 @@
 import { ItemSelectionModal } from "@/components/ItemSelectionModal";
-import { LabelPickerModal } from "@/components/LabelPickerModal";
+import { LabelPickerField } from "@/components/LabelPickerField";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -26,7 +26,6 @@ export default function OrdersScreen() {
   const { showToast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
-  const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
   const [itemStockLimits, setItemStockLimits] = useState<Record<number, number>>({});
   const [orderLabels, setOrderLabels] = useState<string[]>([]);
@@ -280,31 +279,12 @@ export default function OrdersScreen() {
 
       {/* Order Label Input */}
       {pendingItems.length > 0 && (
-        <>
-          <View style={styles.labelHeaderRow}>
-            <ThemedText style={styles.labelFieldLabel}>
-              {t("orders.orderLabel")}{" "}
-              <ThemedText style={styles.requiredStar}>*</ThemedText>
-            </ThemedText>
-            <TouchableOpacity
-              style={styles.labelPickerButton}
-              onPress={() => setShowLabelPicker(true)}
-            >
-              <IconSymbol name="plus" size={20} color="white" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.labelContainer}>
-            {orderLabels.length > 0 && (
-              <View style={styles.labelsChipRow}>
-                {orderLabels.map((label, index) => (
-                  <View key={index} style={styles.labelChip}>
-                    <ThemedText style={styles.labelChipText}>{label}</ThemedText>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        </>
+        <LabelPickerField
+          label={t("orders.orderLabel")}
+          required
+          selectedLabels={orderLabels}
+          onLabelsChange={setOrderLabels}
+        />
       )}
 
       {/* Submit Button */}
@@ -354,17 +334,6 @@ export default function OrdersScreen() {
           </TouchableOpacity>
         </View>
       )}
-
-      {/* Label Picker Modal */}
-      <LabelPickerModal
-        visible={showLabelPicker}
-        selectedLabels={orderLabels}
-        onConfirm={(labels) => {
-          setOrderLabels(labels);
-          setShowLabelPicker(false);
-        }}
-        onClose={() => setShowLabelPicker(false)}
-      />
 
       {/* Item Selection Modal */}
       <ItemSelectionModal

@@ -1,4 +1,4 @@
-import { LabelInput } from "@/components/LabelInput";
+import { LabelPickerField } from "@/components/LabelPickerField";
 import { Paginator } from "@/components/Paginator";
 import { ThemedPicker } from "@/components/ThemedPicker";
 import { ThemedText } from "@/components/themed-text";
@@ -38,7 +38,7 @@ export default function HistoryScreen() {
 
   const [startDate, setStartDate] = useState<Date | null>(() => getYesterday());
   const [endDate, setEndDate] = useState<Date | null>(() => getToday());
-  const [labelFilter, setLabelFilter] = useState("");
+  const [labelFilter, setLabelFilter] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] =
     useState<keyof typeof ORDER_STATUS>("open");
   const [pageNumber, setPageNumber] = useState(1);
@@ -47,7 +47,7 @@ export default function HistoryScreen() {
   // Draft state — edited inside the modal, committed on close
   const [draftStartDate, setDraftStartDate] = useState<Date | null>(() => getYesterday());
   const [draftEndDate, setDraftEndDate] = useState<Date | null>(() => getToday());
-  const [draftLabelFilter, setDraftLabelFilter] = useState("");
+  const [draftLabelFilter, setDraftLabelFilter] = useState<string[]>([]);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
@@ -62,11 +62,10 @@ export default function HistoryScreen() {
       startDate: startDate?.toISOString().split("T")[0],
       endDate: endDate?.toISOString().split("T")[0],
       status: selectedStatus,
-      label: labelFilter || undefined,
+      label: labelFilter.length > 0 ? labelFilter.join(",") : undefined,
     },
     { pollingInterval: 10000 }
   );
-
 
   const orders = ordersResponse?.data || [];
   const pagination = ordersResponse?.pagination;
@@ -308,15 +307,10 @@ export default function HistoryScreen() {
             </View>
 
             <View style={styles.filterSection}>
-              <ThemedText style={styles.filterLabel}>Label</ThemedText>
-              <LabelInput
-                labelId={null}
-                labelName={draftLabelFilter}
-                onLabelChange={(_id, name) => setDraftLabelFilter(name)}
-                onClear={() => setDraftLabelFilter("")}
-                placeholder={t("orders.orderLabelPlaceholder")}
-                placeholderTextColor="#999"
-                autoCapitalize="sentences"
+              <LabelPickerField
+                label="Label"
+                selectedLabels={draftLabelFilter}
+                onLabelsChange={setDraftLabelFilter}
               />
             </View>
           </View>
