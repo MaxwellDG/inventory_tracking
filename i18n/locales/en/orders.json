@@ -26,10 +26,13 @@
   "selectBothCategoryAndItem": "Please select both category and item",
   "subtotal": "Subtotal:",
   "total": "Total:",
-  "orderLabel": "Order Label",
+  "orderLabel": "Order Labels",
   "orderLabelPlaceholder": "Enter order label...",
   "labelRequired": "Order label is required",
   "selectExistingLabel": "Please select an existing label from the dropdown",
   "selectLabel": "Select Label",
+  "selectLabels": "Select Labels",
+  "done": "Done",
+  "typeCustomLabel": "Type a custom label...",
   "noLabelsAvailable": "No labels available. Create labels in the Update tab."
 }

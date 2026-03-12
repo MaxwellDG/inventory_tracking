@@ -24,7 +24,7 @@ export type Order = {
   created_at: Date;
   updated_at: Date;
   fees: Fee[];
-  label: string;
+  label: string[];
 };
 
 export type GetOrderResponse = {
@@ -38,7 +38,12 @@ export type GetOrderResponse = {
   created_at: Date;
   updated_at: Date;
   fees: Fee[];
-  label: string;
+  label: string[];
+};
+
+export type OrderLabel = {
+  id: number;
+  name: string;
 };
 
 export type OrderListItem = {
@@ -49,7 +54,7 @@ export type OrderListItem = {
   status: keyof typeof ORDER_STATUS;
   created_at: Date;
   updated_at: Date;
-  label: string;
+  labels: OrderLabel[];
 };
 
 export type OrderResponse = Order[];
@@ -80,7 +85,7 @@ export type OrderItemDetail = {
 
 export type CreateOrderRequest = {
   items: OrderItem[];
-  label: string;
+  labels: (string | number)[];
 };
 
 export type UpdateOrderRequest = {

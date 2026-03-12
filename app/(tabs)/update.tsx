@@ -602,6 +602,9 @@ export default function UpdateScreen() {
       shouldGlow: shouldGlowItems,
       renderContent: () => (
         <>
+          <ThemedText style={styles.inputLabel}>
+            {t("inventoryEdit.itemNameLabel")}
+          </ThemedText>
           <TextInput
             style={styles.input}
             placeholder={t("inventoryEdit.itemNamePlaceholder")}
@@ -612,24 +615,37 @@ export default function UpdateScreen() {
           />
 
           <View style={styles.inputRow}>
-            <TextInput
-              style={[styles.input, styles.inputHalf]}
-              placeholder={t("inventoryEdit.quantityPlaceholder")}
-              placeholderTextColor="#999"
-              value={newItemQuantity}
-              onChangeText={setNewItemQuantity}
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={[styles.input, styles.inputHalf]}
-              placeholder={t("inventoryEdit.unitPlaceholder")}
-              placeholderTextColor="#999"
-              value={newItemUnit}
-              onChangeText={setNewItemUnit}
-              autoCapitalize="words"
-            />
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <ThemedText style={styles.inputLabel}>
+                {t("inventoryEdit.quantityLabel")}
+              </ThemedText>
+              <TextInput
+                style={styles.input}
+                placeholder={t("inventoryEdit.quantityPlaceholder")}
+                placeholderTextColor="#999"
+                value={newItemQuantity}
+                onChangeText={setNewItemQuantity}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.inputLabel}>
+                {t("inventoryEdit.unitLabel")}
+              </ThemedText>
+              <TextInput
+                style={styles.input}
+                placeholder={t("inventoryEdit.unitPlaceholder")}
+                placeholderTextColor="#999"
+                value={newItemUnit}
+                onChangeText={setNewItemUnit}
+                autoCapitalize="words"
+              />
+            </View>
           </View>
 
+          <ThemedText style={styles.inputLabel}>
+            {t("inventoryEdit.priceLabel")}
+          </ThemedText>
           <TextInput
             style={styles.input}
             placeholder={t("inventoryEdit.pricePlaceholder")}
@@ -809,6 +825,9 @@ export default function UpdateScreen() {
 
           {selectedEditItem && (
             <>
+              <ThemedText style={styles.inputLabel}>
+                {t("inventoryEdit.itemNameLabel")}
+              </ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder={t("inventoryEdit.enterNewItemName")}
@@ -818,6 +837,9 @@ export default function UpdateScreen() {
                 autoCapitalize="words"
               />
 
+              <ThemedText style={styles.inputLabel}>
+                {t("inventoryEdit.priceLabel")}
+              </ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder={t("inventoryEdit.enterNewPrice")}
@@ -827,6 +849,9 @@ export default function UpdateScreen() {
                 keyboardType="numeric"
               />
 
+              <ThemedText style={styles.inputLabel}>
+                {t("inventoryEdit.unitLabel")}
+              </ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder={t("inventoryEdit.enterNewUnit")}
@@ -1206,6 +1231,12 @@ const styles = StyleSheet.create({
   },
   categorySelector: {
     marginBottom: 12,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#555",
+    marginBottom: 4,
   },
   selectorLabel: {
     fontSize: 14,

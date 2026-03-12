@@ -67,6 +67,7 @@ export default function HistoryScreen() {
     { pollingInterval: 10000 }
   );
 
+
   const orders = ordersResponse?.data || [];
   const pagination = ordersResponse?.pagination;
 
@@ -221,14 +222,22 @@ export default function HistoryScreen() {
             </ThemedText>
           </View>
         ) : (
-          orders.map((order) => (
+          orders.map((order) => {
+            console.log("order labels: ", order.labels);
+            return (
             <TouchableOpacity
               key={order.uuid}
               style={styles.orderCard}
               onPress={() => handleOrderPress(order)}
             >
               <View style={styles.orderHeader}>
-                <ThemedText style={styles.orderLabel}>{order.label}</ThemedText>
+                <View style={styles.orderLabelChips}>
+                  {order.labels.map((lbl) => (
+                    <View key={lbl.id} style={styles.orderLabelChip}>
+                      <ThemedText style={styles.orderLabelChipText}>{lbl.name}</ThemedText>
+                    </View>
+                  ))}
+                </View>
                 <IconSymbol name="chevron.right" size={16} color="#666" />
               </View>
               <View style={styles.orderDetails}>
@@ -240,7 +249,8 @@ export default function HistoryScreen() {
                 </ThemedText>
               </View>
             </TouchableOpacity>
-          ))
+            );
+          })
         )}
       </ScrollView>
 
@@ -414,11 +424,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  orderLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+  orderLabelChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
     flex: 1,
+  },
+  orderLabelChip: {
+    backgroundColor: "#007AFF",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  orderLabelChipText: {
+    fontSize: 13,
+    color: "white",
+    fontWeight: "500",
   },
   orderDetails: {
     flexDirection: "row",

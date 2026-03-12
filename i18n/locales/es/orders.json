@@ -26,10 +26,13 @@
   "selectBothCategoryAndItem": "Por favor, selecciona categoría y artículo",
   "subtotal": "Subtotal:",
   "total": "Total:",
-  "orderLabel": "Etiqueta del pedido",
+  "orderLabel": "Etiquetas del pedido",
   "orderLabelPlaceholder": "Ingrese la etiqueta del pedido...",
   "labelRequired": "La etiqueta del pedido es obligatoria",
   "selectExistingLabel": "Por favor seleccione una etiqueta existente del menú desplegable",
   "selectLabel": "Seleccionar etiqueta",
+  "selectLabels": "Seleccionar etiquetas",
+  "done": "Listo",
+  "typeCustomLabel": "Escribe una etiqueta personalizada...",
   "noLabelsAvailable": "No hay etiquetas disponibles. Crea etiquetas en la pestaña Actualizar."
 }

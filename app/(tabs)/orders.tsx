@@ -1,5 +1,5 @@
 import { ItemSelectionModal } from "@/components/ItemSelectionModal";
-import { LabelInput } from "@/components/LabelInput";
+import { LabelPickerModal } from "@/components/LabelPickerModal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -26,9 +26,10 @@ export default function OrdersScreen() {
   const { showToast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
   const [itemStockLimits, setItemStockLimits] = useState<Record<number, number>>({});
-  const [orderLabel, setOrderLabel] = useState("");
+  const [orderLabels, setOrderLabels] = useState<string[]>([]);
   const { data: fees = [] } = useGetFeesQuery();
   const [createOrder, { isLoading: isSubmitting }] = useCreateOrderMutation();
 
@@ -56,7 +57,7 @@ export default function OrdersScreen() {
   const handleClearAllItems = () => {
     setPendingItems([]);
     setItemStockLimits({});
-    setOrderLabel("");
+    setOrderLabels([]);
     setShowClearModal(false);
   };
 
@@ -279,22 +280,31 @@ export default function OrdersScreen() {
 
       {/* Order Label Input */}
       {pendingItems.length > 0 && (
-        <View style={styles.labelContainer}>
-          <ThemedText style={styles.labelFieldLabel}>
-            {t("orders.orderLabel")}{" "}
-            <ThemedText style={styles.requiredStar}>*</ThemedText>
-          </ThemedText>
-          <LabelInput
-            labelId={null}
-            labelName={orderLabel}
-            onLabelChange={(id, name) => {
-              setOrderLabel(name);
-            }}
-            placeholder={t("orders.orderLabelPlaceholder")}
-            placeholderTextColor="#999"
-            autoCapitalize="sentences"
-          />
-        </View>
+        <>
+          <View style={styles.labelHeaderRow}>
+            <ThemedText style={styles.labelFieldLabel}>
+              {t("orders.orderLabel")}{" "}
+              <ThemedText style={styles.requiredStar}>*</ThemedText>
+            </ThemedText>
+            <TouchableOpacity
+              style={styles.labelPickerButton}
+              onPress={() => setShowLabelPicker(true)}
+            >
+              <IconSymbol name="plus" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.labelContainer}>
+            {orderLabels.length > 0 && (
+              <View style={styles.labelsChipRow}>
+                {orderLabels.map((label, index) => (
+                  <View key={index} style={styles.labelChip}>
+                    <ThemedText style={styles.labelChipText}>{label}</ThemedText>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </>
       )}
 
       {/* Submit Button */}
@@ -303,11 +313,11 @@ export default function OrdersScreen() {
           <TouchableOpacity
             style={[
               styles.submitButton,
-              (isSubmitting || !orderLabel.trim()) &&
+              (isSubmitting || orderLabels.length === 0) &&
                 styles.submitButtonDisabled,
             ]}
             onPress={async () => {
-              if (!orderLabel.trim()) {
+              if (orderLabels.length === 0) {
                 showToast(t("orders.labelRequired"), "error");
                 return;
               }
@@ -317,14 +327,14 @@ export default function OrdersScreen() {
                     id: item.id,
                     quantity: item.quantity,
                   })),
-                  label: orderLabel.trim(),
+                  labels: orderLabels,
                 };
 
                 await createOrder(orderPayload).unwrap();
 
                 showToast(t("orders.orderCreated"), "success");
                 setPendingItems([]);
-                setOrderLabel("");
+                setOrderLabels([]);
               } catch (error: any) {
                 showToast(
                   error?.data?.message || t("orders.orderSubmitError"),
@@ -332,7 +342,7 @@ export default function OrdersScreen() {
                 );
               }
             }}
-            disabled={isSubmitting || !orderLabel.trim()}
+            disabled={isSubmitting || orderLabels.length === 0}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color="white" />
@@ -344,6 +354,17 @@ export default function OrdersScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Label Picker Modal */}
+      <LabelPickerModal
+        visible={showLabelPicker}
+        selectedLabels={orderLabels}
+        onConfirm={(labels) => {
+          setOrderLabels(labels);
+          setShowLabelPicker(false);
+        }}
+        onClose={() => setShowLabelPicker(false)}
+      />
 
       {/* Item Selection Modal */}
       <ItemSelectionModal
@@ -397,7 +418,7 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "white",
   },
   header: {
     paddingHorizontal: 20,
@@ -461,12 +482,43 @@ const styles = StyleSheet.create({
   labelContainer: {
     paddingHorizontal: 20,
     paddingBottom: 16,
+    paddingTop: 6,
+  },
+  labelHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 8,
   },
   labelFieldLabel: {
     fontSize: 14,
     fontWeight: "600",
     color: "#333",
-    marginBottom: 8,
+  },
+  labelPickerButton: {
+    backgroundColor: "#007AFF",
+    borderRadius: 10,
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  labelsChipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  labelChip: {
+    backgroundColor: "#007AFF",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  labelChipText: {
+    fontSize: 14,
+    color: "white",
+    fontWeight: "500",
   },
   // Orders list styles
   ordersList: {
