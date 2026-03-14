@@ -127,16 +127,16 @@ function Navigation() {
   if (isAuthenticated) {
     // Authenticated user routes
     return (
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
+          options={{ presentation: "modal", title: "Modal", headerShown: true }}
         />
-        <Stack.Screen name="company" options={{ headerShown: false }} />
-        <Stack.Screen name="join-company" options={{ headerShown: false }} />
-        <Stack.Screen name="create-company" options={{ headerShown: false }} />
+        <Stack.Screen name="company" />
+        <Stack.Screen name="join-company" />
+        <Stack.Screen name="create-company" />
         {/* Hide auth routes from authenticated users */}
         <Stack.Screen name="(auth)" options={{ href: null }} />
       </Stack>
@@ -144,9 +144,9 @@ function Navigation() {
   } else {
     // Unauthenticated user routes
     return (
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
         {/* Hide authenticated routes from unauthenticated users */}
         <Stack.Screen name="(tabs)" options={{ href: null }} />
         <Stack.Screen name="modal" options={{ href: null }} />
