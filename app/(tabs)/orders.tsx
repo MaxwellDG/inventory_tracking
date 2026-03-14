@@ -7,7 +7,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { useGetFeesQuery } from "@/redux/fees/apiSlice";
 import { useCreateOrderMutation } from "@/redux/orders/apiSlice";
 import { Item } from "@/redux/products/types";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -20,6 +20,162 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+type SwipeableItemCardProps = {
+  item: Item;
+  index: number;
+  itemStockLimits: Record<number, number>;
+  onDelete: (itemId: number) => void;
+  onIncrease: (itemId: number) => void;
+  onDecrease: (itemId: number) => void;
+};
+
+function SwipeableItemCard({
+  item,
+  itemStockLimits,
+  onDelete,
+  onIncrease,
+  onDecrease,
+}: SwipeableItemCardProps) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSwiping, setIsSwiping] = useState(false);
+
+  const panResponder = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return (
+        Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
+        Math.abs(gestureState.dx) > 10
+      );
+    },
+    onPanResponderGrant: () => {
+      setIsSwiping(true);
+    },
+    onPanResponderMove: (_, gestureState) => {
+      if (gestureState.dx < 0) {
+        translateX.setValue(gestureState.dx);
+      }
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      setIsSwiping(false);
+      if (gestureState.dx < -100) {
+        setIsDeleting(true);
+        Animated.timing(translateX, {
+          toValue: -400,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          onDelete(item.id);
+        });
+      } else {
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })).current;
+
+  return (
+    <Animated.View
+      style={[
+        cardStyles.orderCard,
+        {
+          transform: [{ translateX }],
+          opacity: isDeleting ? 0.5 : 1,
+          backgroundColor: isSwiping ? "#FFE6E6" : "white",
+        },
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <View style={cardStyles.orderItemRow}>
+        <View style={cardStyles.orderItemTop}>
+          <ThemedText style={cardStyles.orderItemName}>{item.name}</ThemedText>
+          <View style={cardStyles.orderQuantityControls}>
+            <TouchableOpacity
+              style={[cardStyles.orderQuantityButton, item.quantity <= 1 && cardStyles.orderQuantityButtonDisabled]}
+              onPress={() => onDecrease(item.id)}
+              disabled={item.quantity <= 1}
+            >
+              <ThemedText style={cardStyles.orderQuantityButtonText}>-</ThemedText>
+            </TouchableOpacity>
+            <ThemedText style={cardStyles.orderQuantityText}>
+              {item.quantity}
+            </ThemedText>
+            <TouchableOpacity
+              style={[cardStyles.orderQuantityButton, item.quantity >= (itemStockLimits[item.id] ?? Infinity) && cardStyles.orderQuantityButtonDisabled]}
+              onPress={() => onIncrease(item.id)}
+              disabled={item.quantity >= (itemStockLimits[item.id] ?? Infinity)}
+            >
+              <ThemedText style={cardStyles.orderQuantityButtonText}>+</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
+const cardStyles = StyleSheet.create({
+  orderCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#E5E5E7",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  orderItemRow: {
+    padding: 8,
+  },
+  orderItemTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  orderItemName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    flex: 1,
+    marginBottom: 0,
+  },
+  orderQuantityControls: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  orderQuantityButton: {
+    backgroundColor: "#007AFF",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  orderQuantityButtonDisabled: {
+    backgroundColor: "#C7C7CC",
+  },
+  orderQuantityButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
+  },
+  orderQuantityText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginHorizontal: 12,
+    minWidth: 20,
+    textAlign: "center",
+    marginBottom: 0,
+  },
+});
 
 export default function OrdersScreen() {
   const { t } = useTranslation();
@@ -112,94 +268,6 @@ export default function OrdersScreen() {
     );
   };
 
-  const SwipeableItemCard = ({
-    item,
-    index,
-  }: {
-    item: Item;
-    index: number;
-  }) => {
-    const translateX = new Animated.Value(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isSwiping, setIsSwiping] = useState(false);
-
-    const panResponder = PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
-          Math.abs(gestureState.dx) > 10
-        );
-      },
-      onPanResponderGrant: () => {
-        setIsSwiping(true);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dx < 0) {
-          translateX.setValue(gestureState.dx);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        setIsSwiping(false);
-        if (gestureState.dx < -100) {
-          // Swipe left far enough to trigger delete
-          setIsDeleting(true);
-          Animated.timing(translateX, {
-            toValue: -400,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            handleDeleteItem(item.id);
-          });
-        } else {
-          // Snap back to original position
-          Animated.spring(translateX, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    });
-
-    return (
-      <Animated.View
-        style={[
-          styles.orderCard,
-          {
-            transform: [{ translateX }],
-            opacity: isDeleting ? 0.5 : 1,
-            backgroundColor: isSwiping ? "#FFE6E6" : "white",
-          },
-        ]}
-        {...panResponder.panHandlers}
-      >
-        <View key={item.id} style={styles.orderItemRow}>
-          <View style={styles.orderItemTop}>
-            <ThemedText style={styles.orderItemName}>{item.name}</ThemedText>
-            <View style={styles.orderQuantityControls}>
-              <TouchableOpacity
-                style={[styles.orderQuantityButton, item.quantity <= 1 && styles.orderQuantityButtonDisabled]}
-                onPress={() => handleDecreaseQuantity(item.id)}
-                disabled={item.quantity <= 1}
-              >
-                <ThemedText style={styles.orderQuantityButtonText}>-</ThemedText>
-              </TouchableOpacity>
-              <ThemedText style={styles.orderQuantityText}>
-                {item.quantity}
-              </ThemedText>
-              <TouchableOpacity
-                style={[styles.orderQuantityButton, item.quantity >= (itemStockLimits[item.id] ?? Infinity) && styles.orderQuantityButtonDisabled]}
-                onPress={() => handleIncreaseQuantity(item.id)}
-                disabled={item.quantity >= (itemStockLimits[item.id] ?? Infinity)}
-              >
-                <ThemedText style={styles.orderQuantityButtonText}>+</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Animated.View>
-    );
-  };
-
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
@@ -241,7 +309,15 @@ export default function OrdersScreen() {
           </View>
         ) : (
           pendingItems.map((item, index) => (
-            <SwipeableItemCard key={item.id} item={item} index={index} />
+            <SwipeableItemCard
+              key={item.id}
+              item={item}
+              index={index}
+              itemStockLimits={itemStockLimits}
+              onDelete={handleDeleteItem}
+              onIncrease={handleIncreaseQuantity}
+              onDecrease={handleDecreaseQuantity}
+            />
           ))
         )}
       </ScrollView>
@@ -505,103 +581,6 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     lineHeight: 24,
-  },
-  orderCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: "#E5E5E7",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  orderHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: 24,
-  },
-  orderHeaderLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "flex-start",
-  },
-  orderNumber: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#007AFF",
-    marginRight: 8,
-    minWidth: 20,
-    textAlignVertical: "center",
-    lineHeight: 24,
-  },
-  orderText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
-    flex: 1,
-    textAlignVertical: "center",
-    lineHeight: 24,
-  },
-  orderItemRow: {
-    padding: 8,
-  },
-  orderItemTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  orderItemName: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#333",
-    flex: 1,
-    marginBottom: 0,
-  },
-  orderQuantityControls: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  orderQuantityButton: {
-    backgroundColor: "#007AFF",
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  orderQuantityButtonDisabled: {
-    backgroundColor: "#C7C7CC",
-  },
-  orderQuantityButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "white",
-  },
-  orderQuantityText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginHorizontal: 12,
-    minWidth: 20,
-    textAlign: "center",
-    marginBottom: 0,
-  },
-  deleteButton: {
-    padding: 8,
-    marginLeft: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  orderDate: {
-    fontSize: 14,
-    color: "#666",
   },
   // Totals container styles
   totalsContainer: {

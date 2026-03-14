@@ -39,8 +39,8 @@ export const ordersApi = createApi({
         if (params.status !== undefined) {
           queryParams.append("status", params.status);
         }
-        if (params.label !== undefined && params.label !== "") {
-          queryParams.append("label", params.label);
+        if (params.labelIds !== undefined && params.labelIds.length > 0) {
+          params.labelIds.forEach((id) => queryParams.append("label_ids[]", id.toString()));
         }
         const queryString = queryParams.toString();
 
@@ -113,8 +113,8 @@ export const ordersApi = createApi({
         };
       },
       invalidatesTags: (result, error, { order_uuid }) => [
-        "orders",
         { type: "orders", id: order_uuid },
+        { type: "orders", id: "LIST" },
       ],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
@@ -138,8 +138,8 @@ export const ordersApi = createApi({
         };
       },
       invalidatesTags: (result, error, { order_uuid }) => [
-        "orders",
         { type: "orders", id: order_uuid },
+        { type: "orders", id: "LIST" },
       ],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {

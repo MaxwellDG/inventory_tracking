@@ -52,5 +52,8 @@
   "cannotOrderQuantity": "No se pueden pedir {{orderQuantity}} artículos. Solo hay {{availableQuantity}} disponibles en el inventario.",
   "itemAdded": "Artículo añadido al pedido",
   "itemAddError": "Error al añadir el artículo. Por favor, inténtalo de nuevo.",
-  "editItems": "Editar artículos"
+  "editItems": "Editar artículos",
+  "filters": "Filtros",
+  "dateRange": "Rango de fechas",
+  "filterLabel": "Etiqueta"
 }

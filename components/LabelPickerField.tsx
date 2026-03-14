@@ -9,6 +9,7 @@ type LabelPickerFieldProps = {
   required?: boolean;
   selectedLabels: string[];
   onLabelsChange: (labels: string[]) => void;
+  allowCustom?: boolean;
 };
 
 export function LabelPickerField({
@@ -16,6 +17,7 @@ export function LabelPickerField({
   required,
   selectedLabels,
   onLabelsChange,
+  allowCustom,
 }: LabelPickerFieldProps) {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -52,6 +54,7 @@ export function LabelPickerField({
           setShowPicker(false);
         }}
         onClose={() => setShowPicker(false)}
+        allowCustom={allowCustom}
       />
     </>
   );

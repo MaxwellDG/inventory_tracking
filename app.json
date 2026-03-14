@@ -55,7 +55,8 @@
       ]
     ],
     "updates": {
-      "enabled": false
+      "enabled": false,
+      "checkAutomatically": "NEVER"
     },
     "experiments": {
       "typedRoutes": true,

@@ -4,6 +4,7 @@ import { ThemedPicker } from "@/components/ThemedPicker";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useGetLabelsQuery } from "@/redux/labels/apiSlice";
 import { useGetOrdersQuery } from "@/redux/orders/apiSlice";
 import { ORDER_STATUS } from "@/redux/orders/types";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -51,6 +52,15 @@ export default function HistoryScreen() {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
+  const { data: labelsData = [] } = useGetLabelsQuery();
+
+  const labelIds = labelFilter.length > 0
+    ? labelFilter.flatMap((name) => {
+        const match = labelsData.find((l) => l.name === name);
+        return match ? [match.id] : [];
+      })
+    : undefined;
+
   const {
     data: ordersResponse,
     isLoading,
@@ -62,7 +72,7 @@ export default function HistoryScreen() {
       startDate: startDate?.toISOString().split("T")[0],
       endDate: endDate?.toISOString().split("T")[0],
       status: selectedStatus,
-      label: labelFilter.length > 0 ? labelFilter.join(",") : undefined,
+      labelIds: labelIds && labelIds.length > 0 ? labelIds : undefined,
     },
     { pollingInterval: 10000 }
   );
@@ -109,6 +119,7 @@ export default function HistoryScreen() {
     setStartDate(draftStartDate);
     setEndDate(draftEndDate);
     setLabelFilter(draftLabelFilter);
+    setPageNumber(1);
     setShowFilters(false);
   };
 
@@ -170,13 +181,13 @@ export default function HistoryScreen() {
             style={styles.filtersButton}
             onPress={openFilters}
           >
-            <ThemedText style={styles.filtersButtonText}>Filters</ThemedText>
+            <ThemedText style={styles.filtersButtonText}>{t("history.filters")}</ThemedText>
           </TouchableOpacity>
         </View>
         <View style={styles.statusFilterContainer}>
           <ThemedPicker
             selectedValue={selectedStatus}
-            onValueChange={(value) => setSelectedStatus(value)}
+            onValueChange={(value) => { setSelectedStatus(value); setPageNumber(1); }}
             style={styles.statusPicker}
           >
             <ThemedPicker.Item
@@ -221,9 +232,7 @@ export default function HistoryScreen() {
             </ThemedText>
           </View>
         ) : (
-          orders.map((order) => {
-            console.log("order labels: ", order.labels);
-            return (
+          orders.map((order) => (
             <TouchableOpacity
               key={order.uuid}
               style={styles.orderCard}
@@ -248,8 +257,7 @@ export default function HistoryScreen() {
                 </ThemedText>
               </View>
             </TouchableOpacity>
-            );
-          })
+          ))
         )}
       </ScrollView>
 
@@ -271,7 +279,7 @@ export default function HistoryScreen() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <ThemedText style={styles.modalTitle}>Filters</ThemedText>
+            <ThemedText style={styles.modalTitle}>{t("history.filters")}</ThemedText>
             <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={closeFilters}
@@ -282,7 +290,7 @@ export default function HistoryScreen() {
 
           <View style={styles.modalContent}>
             <View style={styles.filterSection}>
-              <ThemedText style={styles.filterLabel}>Date Range</ThemedText>
+              <ThemedText style={styles.filterLabel}>{t("history.dateRange")}</ThemedText>
               <View style={styles.dateFilterRow}>
                 <TouchableOpacity
                   style={styles.dateButton}
@@ -308,9 +316,10 @@ export default function HistoryScreen() {
 
             <View style={styles.filterSection}>
               <LabelPickerField
-                label="Label"
+                label={t("history.filterLabel")}
                 selectedLabels={draftLabelFilter}
                 onLabelsChange={setDraftLabelFilter}
+                allowCustom={false}
               />
             </View>
           </View>

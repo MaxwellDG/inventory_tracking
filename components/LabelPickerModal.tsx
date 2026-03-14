@@ -20,6 +20,7 @@ type LabelPickerModalProps = {
   selectedLabels: string[];
   onConfirm: (labels: string[]) => void;
   onClose: () => void;
+  allowCustom?: boolean;
 };
 
 export function LabelPickerModal({
@@ -27,6 +28,7 @@ export function LabelPickerModal({
   selectedLabels,
   onConfirm,
   onClose,
+  allowCustom = true,
 }: LabelPickerModalProps) {
   const { t } = useTranslation();
   const { data: labelsData = [] } = useGetLabelsQuery();
@@ -98,25 +100,27 @@ export function LabelPickerModal({
           </View>
 
           {/* Custom label input */}
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder={t("orders.typeCustomLabel")}
-              placeholderTextColor="#999"
-              returnKeyType="done"
-              onSubmitEditing={handleAddCustomLabel}
-              autoCapitalize="sentences"
-            />
-            <TouchableOpacity
-              style={[styles.addBtn, !inputText.trim() && styles.addBtnDisabled]}
-              onPress={handleAddCustomLabel}
-              disabled={!inputText.trim()}
-            >
-              <IconSymbol name="plus" size={20} color="white" />
-            </TouchableOpacity>
-          </View>
+          {allowCustom && (
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder={t("orders.typeCustomLabel")}
+                placeholderTextColor="#999"
+                returnKeyType="done"
+                onSubmitEditing={handleAddCustomLabel}
+                autoCapitalize="sentences"
+              />
+              <TouchableOpacity
+                style={[styles.addBtn, !inputText.trim() && styles.addBtnDisabled]}
+                onPress={handleAddCustomLabel}
+                disabled={!inputText.trim()}
+              >
+                <IconSymbol name="plus" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Label list */}
           <ScrollView
@@ -125,7 +129,7 @@ export function LabelPickerModal({
             keyboardShouldPersistTaps="handled"
           >
             {/* Custom labels at top — press to delete */}
-            {customLabels.map((label) => (
+            {allowCustom && customLabels.map((label) => (
               <TouchableOpacity
                 key={`custom-${label}`}
                 style={[styles.labelItem, styles.labelItemSelected]}

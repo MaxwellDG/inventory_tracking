@@ -6,5 +6,5 @@ export type PaginationFilters = Partial<{
   startDate: string;
   endDate: string;
   status: keyof typeof ORDER_STATUS;
-  label: string;
+  labelIds: number[];
 }>;

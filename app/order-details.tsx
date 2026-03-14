@@ -1,4 +1,5 @@
 import { ItemSelectionModal } from "@/components/ItemSelectionModal";
+import { formatCurrency } from "@/utils/currency";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -336,7 +337,7 @@ export default function OrderDetailsScreen() {
                 {t("history.subtotal")}:
               </ThemedText>
               <ThemedText style={styles.summaryValue}>
-                ${orderData.subtotal}
+                ${formatCurrency(fullOrder?.subtotal ?? orderData.subtotal)}
               </ThemedText>
             </View>
 
@@ -348,7 +349,7 @@ export default function OrderDetailsScreen() {
                   <View key={fee.id} style={styles.summaryRow}>
                     <ThemedText style={styles.feeLabel}>{fee.name}</ThemedText>
                     <ThemedText style={styles.feeValue}>
-                      ${fee.value}
+                      ${formatCurrency(fee.value)}
                     </ThemedText>
                   </View>
                 );
@@ -359,7 +360,7 @@ export default function OrderDetailsScreen() {
                 {t("history.total")}:
               </ThemedText>
               <ThemedText style={[styles.summaryValue, styles.totalValue]}>
-                ${orderData.total}
+                ${formatCurrency(fullOrder?.total ?? orderData.total)}
               </ThemedText>
             </View>
 
