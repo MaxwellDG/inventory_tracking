@@ -137,8 +137,6 @@ function Navigation() {
         <Stack.Screen name="company" />
         <Stack.Screen name="join-company" />
         <Stack.Screen name="create-company" />
-        {/* Hide auth routes from authenticated users */}
-        <Stack.Screen name="(auth)" options={{ href: null }} />
       </Stack>
     );
   } else {
@@ -147,9 +145,6 @@ function Navigation() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
-        {/* Hide authenticated routes from unauthenticated users */}
-        <Stack.Screen name="(tabs)" options={{ href: null }} />
-        <Stack.Screen name="modal" options={{ href: null }} />
       </Stack>
     );
   }
